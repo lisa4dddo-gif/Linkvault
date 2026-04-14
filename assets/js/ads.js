@@ -1,250 +1,115 @@
 /* ================================================================
    LinkVault — Ad Network Configuration
-   File: assets/js/ads.js
+   File    : assets/js/ads.js
+   Author  : Lisa
+   Generated: 2026-04-14 by LinkVault Config Tool
 
-   ╔══════════════════════════════════════════════════════════════╗
-   ║  BUYER INSTRUCTIONS — READ THIS FIRST                       ║
-   ╠══════════════════════════════════════════════════════════════╣
-   ║  This file is the central hub for all your ad network        ║
-   ║  JavaScript integrations. Paste your ad scripts here and    ║
-   ║  configure the options below.                               ║
-   ║                                                              ║
-   ║  This file is loaded on BOTH index.html and locked.html     ║
-   ║  so you can place ads on either or both pages.              ║
-   ║                                                              ║
-   ║  For banner / display ads, also paste the <script> tags     ║
-   ║  directly into the ad zone divs inside locked.html.         ║
-   ╚══════════════════════════════════════════════════════════════╝
+   HOW IT WORKS:
+   This file injects your ad codes into the correct placeholder
+   divs in locked.html at runtime. It also handles the sticky
+   footer close button.
 
-   SUPPORTED AD TYPES:
-   ─────────────────────────────────────────────────────────────────
-   ① Pop-Under / Pop-Up        → Section A
-   ② Push Notification Ads     → Section B
-   ③ Native / In-Page Ads      → Section C
-   ④ Custom JS on Page Load    → Section D (advanced)
-   ─────────────────────────────────────────────────────────────────
+   AD SLOT IDs (in locked.html):
+     #ad-header-placeholder  → Header leaderboard (728×90)
+     #ad-content-placeholder → Content rectangle  (300×250)
+     #ad-sticky-placeholder  → Sticky footer      (728×90)
+     Pop-under scripts run on page load automatically.
 
-   QUICK START GUIDE:
-   1. Sign up with an ad network (Adsterra, PropellerAds, HilltopAds).
-   2. Create a "Pop-Under" campaign and copy the script tag.
-   3. Paste it in Section A below.
-   4. For banner ads, copy the code into the <div> placeholders
-      inside locked.html (search for "PASTE YOUR" in that file).
-   ================================================================ */
+   TO UPDATE AN AD CODE LATER:
+   Find the correct slot section below and replace the innerHTML
+   string with your new ad code. Re-upload only ads.js.
+================================================================ */
 
 'use strict';
 
-/* ──────────────────────────────────────────────────────────────────
-   ADS CONFIGURATION OBJECT
-   Change any value here to customize behavior.
-   ────────────────────────────────────────────────────────────────── */
-const ADS_CONFIG = {
-
-  /**
-   * ENABLE / DISABLE ADS GLOBALLY
-   * Set to false to turn off all ads loaded by this file at once.
-   * Useful for testing your layout without showing real ads.
-   */
-  enabled: true,
-
-  /**
-   * LOAD ADS ONLY ON LOCKED PAGE?
-   * true  → Ads from this file only fire on locked.html
-   * false → Ads fire on every page that loads this script
-   * Recommended: true (prevents pop-unders on your landing page)
-   */
-  onlyOnLockedPage: true,
-
-  /**
-   * AD DELAY (milliseconds)
-   * Wait this many ms after page load before injecting ad scripts.
-   * Helps ensure your page content loads first, improving UX score.
-   * 0 = inject immediately.
-   */
-  loadDelay: 1500,
-
-};
-
-/* ──────────────────────────────────────────────────────────────────
-   HELPER: Check if we're on the locked page
-   ────────────────────────────────────────────────────────────────── */
-function _isLockedPage() {
-  return !!document.getElementById('countdown-section');
-}
-
-/* ──────────────────────────────────────────────────────────────────
-   HELPER: Inject a script tag into the document <head>
-   ─────────────────────────────────────────────────────────────────
-   @param {string} src   - The URL of the external script to load
-   @param {Object} attrs - Optional extra attributes (e.g., data-*)
-   ────────────────────────────────────────────────────────────────── */
-function _injectScript(src, attrs) {
-  const script = document.createElement('script');
-  script.src   = src;
-  script.async = true;
-  if (attrs) {
-    Object.keys(attrs).forEach(function (key) {
-      script.setAttribute(key, attrs[key]);
-    });
+(function initAds() {
+  /* Only run on the locked page — bail out on index.html */
+  if (!document.getElementById('ad-header-placeholder')) return;
+  
+  /* ── Utility: safely inject code into a placeholder div ── */
+  function injectAd(id, html) {
+    var el = document.getElementById(id);
+    if (!el || !html.trim()) return;
+    var iframe = document.createElement("iframe");
+    iframe.style.width = "100%";
+    iframe.style.height = "100%";
+    iframe.style.border = "none";
+    iframe.style.overflow = "hidden";
+    el.innerHTML = "";
+    el.appendChild(iframe);
+    var iframeDoc = iframe.contentWindow.document;
+    iframeDoc.open();
+    iframeDoc.write("<body style=\"margin:0;padding:0;display:flex;justify-content:center;align-items:center;\">" + html + "</body>");
+    iframeDoc.close();
   }
-  document.head.appendChild(script);
-}
-
-/* ──────────────────────────────────────────────────────────────────
-   HELPER: Inject an inline script block
-   ─────────────────────────────────────────────────────────────────
-   @param {string} code - Raw JavaScript code to execute
-   ────────────────────────────────────────────────────────────────── */
-function _injectInlineScript(code) {
-  const script  = document.createElement('script');
-  script.textContent = code;
-  document.head.appendChild(script);
-}
-
-
-/* ================================================================
-   SECTION A — POP-UNDER / POP-UP ADS
-   ─────────────────────────────────────────────────────────────────
-   These trigger when a visitor clicks anywhere on the page.
-   They open your monetized URL in a new tab/window behind the
-   current page (pop-under) or in front of it (pop-up).
-
-   HOW TO SET UP (Adsterra example):
-   1. Log in to Adsterra → Sites → Get Code
-   2. Choose "Pop-under" format
-   3. Copy the <script src="..."> URL
-   4. Paste it into the _injectScript() call below
-
-   HOW TO SET UP (PropellerAds example):
-   1. Log in → Sites → Add Site → Direct Links
-   2. Copy the script snippet
-   3. Paste the inline JS into _injectInlineScript() below
-   ================================================================ */
-function _loadPopUnderAd() {
-
-  /* ─── OPTION 1: External script URL (most common) ───
-     Replace the src URL below with your network's script URL.
-     Example Adsterra URL format:
-     '//www.highperformanceformat.com/UNIQUE_ID/invoke.js'          */
-
-  // _injectScript('//www.YOURNETWORK.com/YOUR_UNIQUE_POPUNDER_ID/invoke.js');
-
-
-  /* ─── OPTION 2: Inline script block ───
-     Some networks give you an inline snippet instead of a URL.
-     Paste the entire code (without <script> tags) inside the backticks below. */
-
-  // _injectInlineScript(`
-  //   // Paste your PropellerAds / HilltopAds inline script here
-  //   var _pop = _pop || [];
-  //   _pop.push(['siteId', 'YOUR_SITE_ID']);
-  //   // ... rest of their code
-  // `);
-
-}
-
-
-/* ================================================================
-   SECTION B — PUSH NOTIFICATION ADS
-   ─────────────────────────────────────────────────────────────────
-   These ask the visitor to subscribe to push notifications.
-   The subscription is monetized by the ad network.
-
-   HOW TO SET UP:
-   1. Get your push subscription script URL from your ad network.
-   2. Uncomment the _injectScript() line below and paste your URL.
-   ================================================================ */
-function _loadPushNotificationAd() {
-
-  // _injectScript('//www.YOURNETWORK.com/YOUR_PUSH_ID/push.js');
-
-}
-
-
-/* ================================================================
-   SECTION C — NATIVE / IN-PAGE PUSH ADS
-   ─────────────────────────────────────────────────────────────────
-   In-page push ads look like native notifications within the page
-   itself. They don't require browser permission prompts.
-
-   HOW TO SET UP:
-   1. Create an In-Page Push campaign in your ad network dashboard.
-   2. Paste the script below.
-   ================================================================ */
-function _loadInPagePushAd() {
-
-  // _injectScript('//www.YOURNETWORK.com/YOUR_INPAGE_ID/inpage.js');
-
-}
-
-
-/* ================================================================
-   SECTION D — CUSTOM JAVASCRIPT (Advanced)
-   ─────────────────────────────────────────────────────────────────
-   Run any custom JavaScript when the page loads.
-   Useful for direct link integrations, custom trackers, etc.
-   ================================================================ */
-function _loadCustomCode() {
-
-  // _injectInlineScript(`
-  //   // Your custom tracking or ad initialization code here
-  //   console.log('Custom ad code loaded');
-  // `);
-
-}
-
-
-/* ================================================================
-   AD LOADER — Main entry point
-   Checks configuration flags and fires the appropriate ad loaders.
-   ================================================================ */
-function _loadAllAds() {
-  // Global kill switch
-  if (!ADS_CONFIG.enabled) return;
-
-  // Optional: only load on the locked page
-  if (ADS_CONFIG.onlyOnLockedPage && !_isLockedPage()) return;
-
-  // Fire all configured ad sections
-  _loadPopUnderAd();
-  _loadPushNotificationAd();
-  _loadInPagePushAd();
-  _loadCustomCode();
-}
-
-/* ── Kick off the ad loader after the configured delay ── */
-if (ADS_CONFIG.loadDelay > 0) {
-  setTimeout(_loadAllAds, ADS_CONFIG.loadDelay);
-} else {
-  // Wait for DOM to be ready, then load immediately
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', _loadAllAds);
-  } else {
-    _loadAllAds();
-  }
-}
-
-
-/* ================================================================
-   NOTES FOR BUYERS
-   ─────────────────────────────────────────────────────────────────
-   Q: Where do I put my banner ad codes?
-   A: In locked.html, search for "PASTE YOUR ... AD CODE HERE".
-      There are 3 zones: header banner, content square, sticky footer.
-
-   Q: Where do I put my pop-under script?
-   A: In Section A above — uncomment and fill in your script URL.
-
-   Q: How do I add a new ad zone to the page?
-   A: Copy one of the <div id="ad-*-placeholder"> blocks in
-      locked.html, give it a new ID and class, then style it
-      in style.css using the .ad-zone classes as a template.
-
-   Q: My ad network needs a specific variable before the script loads.
-   A: Use _injectInlineScript() in Section D to set global vars first,
-      then use _injectScript() to load the network's main script.
-
-   Q: Can I show ads on index.html too?
-   A: Yes — set ADS_CONFIG.onlyOnLockedPage = false in the config above.
-      Then add ad zone divs to index.html just like in locked.html.
-   ================================================================ */
+  
+  /* ════════════════════════════════════════════════════════
+     HEADER BANNER AD (728×90 Leaderboard)
+     Displayed at the very top of locked.html.
+     ════════════════════════════════════════════════════════ */
+  injectAd('ad-header-placeholder', [
+    '<script>',
+    '  atOptions = {',
+    '    \'key\' : \'954133e88cb0189e5fc34337e9048b6b\',',
+    '    \'format\' : \'iframe\',',
+    '    \'height\' : 90,',
+    '    \'width\' : 728,',
+    '    \'params\' : {}',
+    '  };',
+    '</script>',
+    '<script src="https://www.highperformanceformat.com/954133e88cb0189e5fc34337e9048b6b/invoke.js"></script>'
+  ].join('\n'));
+  
+  /* ════════════════════════════════════════════════════════
+     CONTENT SQUARE AD (300×250 Medium Rectangle)
+     Displayed beside or below the locked card.
+     ════════════════════════════════════════════════════════ */
+  injectAd('ad-content-placeholder', [
+    '<script>',
+    '  atOptions = {',
+    '    \'key\' : \'5334b648589aa7d83b63c89eeefc8eb1\',',
+    '    \'format\' : \'iframe\',',
+    '    \'height\' : 250,',
+    '    \'width\' : 300,',
+    '    \'params\' : {}',
+    '  };',
+    '</script>',
+    '<script src="https://www.highperformanceformat.com/5334b648589aa7d83b63c89eeefc8eb1/invoke.js"></script>'
+  ].join('\n'));
+  
+  /* ════════════════════════════════════════════════════════
+     STICKY FOOTER AD (728×90)
+     Fixed to the bottom of the screen.
+     ════════════════════════════════════════════════════════ */
+  injectAd('ad-sticky-placeholder', [
+    '<script>',
+    '  atOptions = {',
+    '    \'key\' : \'954133e88cb0189e5fc34337e9048b6b\',',
+    '    \'format\' : \'iframe\',',
+    '    \'height\' : 90,',
+    '    \'width\' : 728,',
+    '    \'params\' : {}',
+    '  };',
+    '</script>',
+    '<script src="https://www.highperformanceformat.com/954133e88cb0189e5fc34337e9048b6b/invoke.js"></script>'
+  ].join('\n'));
+  
+  /* ════════════════════════════════════════════════════════
+     POP-UNDER / DIRECT LINK AD
+     Runs immediately on page load. Does not inject into a div.
+     ════════════════════════════════════════════════════════ */
+  (function runPopunder() {
+    var html = "<script src=\"https://pl29152099.profitablecpmratenetwork.com/3c/c0/51/3cc05138b92b7a022893047b25aeeb40.js\"></script>";
+    if (!html.trim()) return;
+    var div = document.createElement("div");
+    div.innerHTML = html;
+    var scripts = div.getElementsByTagName("script");
+    for (var i = 0; i < scripts.length; i++) {
+      var s = document.createElement("script");
+      if (scripts[i].src) s.src = scripts[i].src;
+      else s.textContent = scripts[i].textContent;
+      document.body.appendChild(s);
+    }
+  })();
+  
+})();

@@ -1209,3 +1209,18 @@ nav, main, header, section, footer,
 .ad-zone--sticky {
   min-height: 70px;  /* 50px ad + ~20px label */
 }
+
+
+
+/* Custom Image Logo Style */
+.custom-logo-img {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  border-radius: 8px; 
+}
+
+.locked-logo .custom-logo-img {
+  width: 40px;
+  height: 40px;
+}

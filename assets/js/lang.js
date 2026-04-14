@@ -79,7 +79,7 @@ window.LV_LANG = {
   url_input_label       : 'Destination URL',
   url_input_placeholder : 'Paste your destination URL here…',
   lock_btn              : 'Lock & Earn',
-  shorten_checkbox      : 'Shorten link automatically (TinyURL)',
+  shorten_checkbox      : 'Shorten link automatically (is.gd)',
   generating_text       : 'Generating short link...',
 
   /* ── Output panel ── */
