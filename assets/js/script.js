@@ -303,9 +303,8 @@ if (IS_INDEX_PAGE) {
     return url;
   }
 
-  /* ================================================================
+/* ================================================================
      MAIN URL GENERATOR & SHORTENER LOGIC
-     Replaced with async/await to handle external API calls.
      ================================================================ */
   async function handleLockUrl() {
     clearError();
@@ -329,6 +328,9 @@ if (IS_INDEX_PAGE) {
       return;
     }
 
+    /* Prevent multiple rapid clicks while processing */
+    if (lockBtn.disabled) return;
+
     /* Fetch optional meta details */
     var title = metaTitleInput ? metaTitleInput.value : '';
     var size  = metaSizeInput  ? metaSizeInput.value  : '';
@@ -345,26 +347,80 @@ if (IS_INDEX_PAGE) {
     /* Check if user wants to shorten the link */
     if (shortenCheckbox && shortenCheckbox.checked) {
       
-      /* Show temporary loading text */
+      /* Show temporary loading text and disable button */
       outputUrl.textContent = t('generating_text', 'Generating short link...');
       outputUrl.style.opacity = '0.6';
-      lockBtn.disabled = true; // Prevent spam clicks
+      
+      // Strict UI lockdown during API call
+      lockBtn.disabled = true;
+      lockBtn.style.opacity = '0.7';
+      lockBtn.style.cursor = 'not-allowed';
       
       try {
-      /* Call is.gd Public API to shorten the long locked URL */
-const apiResponse = await fetch('https://is.gd/create.php?format=simple&url=' + encodeURIComponent(lockedUrl));
+        const encodedLockedUrl = encodeURIComponent(lockedUrl);
         
-        if (apiResponse.ok) {
-          finalUrl = await apiResponse.text();
-        } else {
-          console.warn('URL Shortener API failed. Falling back to long URL.');
+        /* Target APIs: is.gd, v.gd, and tinyurl (all provide clean, direct redirects) */
+        const apis = [
+          'https://is.gd/create.php?format=simple&url=' + encodedLockedUrl,
+          'https://v.gd/create.php?format=simple&url=' + encodedLockedUrl,
+          'https://tinyurl.com/api-create.php?url=' + encodedLockedUrl
+        ];
+
+        let shortUrlSuccess = false;
+
+        /* Custom Fetch with Timeout to prevent infinite hanging on free APIs */
+        const fetchWithTimeout = async (resource, options = {}) => {
+          const { timeout = 5000 } = options; // 5 seconds max per API
+          const controller = new AbortController();
+          const id = setTimeout(() => controller.abort(), timeout);
+          const response = await fetch(resource, {
+            ...options,
+            signal: controller.signal  
+          });
+          clearTimeout(id);
+          return response;
+        };
+
+        /* Iterate through the APIs sequentially as a strict fallback mechanism */
+        for (let api of apis) {
+          try {
+            // Use allorigins proxy to bypass browser CORS restrictions
+            const proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(api);
+            
+            const apiResponse = await fetchWithTimeout(proxyUrl, { timeout: 5000 });
+            
+            if (apiResponse.ok) {
+              const responseText = await apiResponse.text();
+              
+              // Ensure the response is actually a valid URL (not a proxy error page)
+              if (responseText.startsWith('http')) {
+                finalUrl = responseText.trim();
+                shortUrlSuccess = true;
+                break; // Exit the loop on first successful generation
+              }
+            }
+          } catch (e) {
+            console.warn(`[LinkVault] API failed or timed out, trying next fallback...`, e.message);
+          }
         }
+
+        /* Handle complete failure gracefully */
+        if (!shortUrlSuccess) {
+          console.warn('[LinkVault] All URL Shortener APIs failed. Falling back to long URL.');
+          // Alert user that long URL is being used (optional, requires showToast to be defined globally)
+          if (typeof showToast === 'function') {
+            showToast(t('toast_shorten_fail', 'Shortener servers busy. Using long URL.'), 'pause', 3000);
+          }
+        }
+
       } catch (error) {
-        console.error('Network error during URL shortening:', error);
+        console.error('[LinkVault] Critical error during URL shortening:', error);
       } finally {
-        /* Restore UI state */
+        /* Restore UI state regardless of success or failure */
         outputUrl.style.opacity = '1';
         lockBtn.disabled = false;
+        lockBtn.style.opacity = '1';
+        lockBtn.style.cursor = 'pointer';
       }
     }
 
@@ -372,6 +428,7 @@ const apiResponse = await fetch('https://is.gd/create.php?format=simple&url=' + 
     outputUrl.textContent = finalUrl;
     previewLink.href      = finalUrl;
   }
+
 
 
   lockBtn.addEventListener('click', handleLockUrl);

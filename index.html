@@ -1,6 +1,44 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  
+  <script>
+  (function() {
+    // ১. চেক করুন URL-এর শেষে admin কমান্ড আছে কি না
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('admin') === 'true') {
+      localStorage.setItem('lv_admin_mode', 'true');
+      alert('🛡️ Admin Mode Activated!\n\n1. Google Analytics Tracking is OFF for you.\n2. All Ads are HIDDEN to prevent accidental clicks.');
+    } else if (urlParams.get('admin') === 'false') {
+      localStorage.removeItem('lv_admin_mode');
+      alert('❌ Admin Mode Deactivated!\n\nYou are now browsing as a normal visitor.');
+    }
+
+    // ২. অ্যাডমিন স্ট্যাটাস চেক করা
+    const isAdmin = localStorage.getItem('lv_admin_mode') === 'true';
+
+    if (!isAdmin) {
+      // ৩. সাধারণ ভিজিটর হলে Google Analytics লোড হবে
+      var gaScript = document.createElement('script');
+      gaScript.async = true;
+      gaScript.src = 'https://www.googletagmanager.com/gtag/js?id=G-NDFBYZ7962';
+      document.head.appendChild(gaScript);
+
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-NDFBYZ7962');
+    } else {
+      // ৪. অ্যাডমিন হলে ট্র্যাকিং বন্ধ এবং Adsterra/Ads হাইড করে অ্যাকাউন্ট সেফ রাখা
+      console.log('🛡️ Admin Mode Active: Analytics and Ads are disabled for your safety.');
+      var protectStyle = document.createElement('style');
+      protectStyle.innerHTML = '.ad-zone, .ad-zone-inner, iframe { display: none !important; pointer-events: none !important; opacity: 0 !important; }';
+      document.head.appendChild(protectStyle);
+    }
+  })();
+</script>
+
+
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title data-i18n="page_title_index">LinkVault — Monetize Every Click</title>
