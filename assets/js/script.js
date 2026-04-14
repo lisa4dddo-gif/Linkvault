@@ -306,6 +306,9 @@ if (IS_INDEX_PAGE) {
 /* ================================================================
      MAIN URL GENERATOR & SHORTENER LOGIC
      ================================================================ */
+  /* ================================================================
+     MAIN URL GENERATOR & SHORTENER LOGIC
+     ================================================================ */
   async function handleLockUrl() {
     clearError();
     var rawUrl = urlInput.value.trim();
@@ -370,7 +373,7 @@ if (IS_INDEX_PAGE) {
 
         /* Custom Fetch with Timeout to prevent infinite hanging on free APIs */
         const fetchWithTimeout = async (resource, options = {}) => {
-          const { timeout = 5000 } = options; // 5 seconds max per API
+          const { timeout = 5000 } = options; 
           const controller = new AbortController();
           const id = setTimeout(() => controller.abort(), timeout);
           const response = await fetch(resource, {
@@ -384,10 +387,11 @@ if (IS_INDEX_PAGE) {
         /* Iterate through the APIs sequentially as a strict fallback mechanism */
         for (let api of apis) {
           try {
-            // Use allorigins proxy to bypass browser CORS restrictions
-            const proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(api);
+            // [FIXED] Use corsproxy.io instead of allorigins to bypass blocks
+            const proxyUrl = 'https://corsproxy.io/?' + encodeURIComponent(api);
             
-            const apiResponse = await fetchWithTimeout(proxyUrl, { timeout: 5000 });
+            // [FIXED] Increased timeout to 8 seconds (8000ms)
+            const apiResponse = await fetchWithTimeout(proxyUrl, { timeout: 8000 });
             
             if (apiResponse.ok) {
               const responseText = await apiResponse.text();
@@ -407,7 +411,6 @@ if (IS_INDEX_PAGE) {
         /* Handle complete failure gracefully */
         if (!shortUrlSuccess) {
           console.warn('[LinkVault] All URL Shortener APIs failed. Falling back to long URL.');
-          // Alert user that long URL is being used (optional, requires showToast to be defined globally)
           if (typeof showToast === 'function') {
             showToast(t('toast_shorten_fail', 'Shortener servers busy. Using long URL.'), 'pause', 3000);
           }
@@ -428,6 +431,7 @@ if (IS_INDEX_PAGE) {
     outputUrl.textContent = finalUrl;
     previewLink.href      = finalUrl;
   }
+
 
 
 
