@@ -1,0 +1,1299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LinkVault — Buyer Config Tool</title>
+
+  <!--
+    ════════════════════════════════════════════════════════════
+    LinkVault — Admin / Buyer Configuration Tool
+    File   : /admin/index.html
+    Author : MD KAWSAR
+
+    PURPOSE:
+      This page helps buyers set up their LinkVault installation
+      without touching any code directly. They fill out the form,
+      click "Generate", and copy-paste two ready-to-use JS files.
+
+    HOW TO USE:
+      1. Open this file in any modern browser (Chrome, Firefox, Edge).
+         You do NOT need a web server — just double-click the file.
+      2. Fill out every section of the form.
+      3. Click "Generate Configuration Files".
+      4. Copy the output from each tab and save it as:
+           → assets/js/site-config.js
+           → assets/js/ads.js
+      5. Upload both files to your hosting. Done!
+
+    SECURITY NOTE:
+      Keep this /admin/ folder password-protected or remove it from
+      your live server once you've generated your config files.
+      It does not connect to any server — all processing is local.
+    ════════════════════════════════════════════════════════════
+  -->
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ════════════════════════════════════════════════
+       CSS VARIABLES — edit these to retheme the panel
+       ════════════════════════════════════════════════ */
+    :root {
+      --bg:           #090d13;
+      --bg-card:      #0f1520;
+      --bg-input:     #080c12;
+      --bg-section:   #111827;
+      --border:       rgba(255,255,255,0.07);
+      --border-focus: rgba(0,224,255,0.45);
+      --accent:       #00e0ff;
+      --accent-dim:   rgba(0,224,255,0.10);
+      --accent-2:     #7c3aed;
+      --green:        #10b981;
+      --green-dim:    rgba(16,185,129,0.12);
+      --amber:        #f59e0b;
+      --amber-dim:    rgba(245,158,11,0.10);
+      --red:          #ef4444;
+      --red-dim:      rgba(239,68,68,0.10);
+      --text:         #e2e8f0;
+      --text-muted:   #64748b;
+      --text-dim:     #334155;
+      --mono:         'JetBrains Mono', monospace;
+      --sans:         'Space Grotesk', sans-serif;
+      --radius:       10px;
+      --radius-lg:    16px;
+    }
+
+    /* ── Reset ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: var(--sans);
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      font-size: 15px;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+    a { color: var(--accent); text-decoration: none; }
+    code { font-family: var(--mono); font-size: 0.85em; color: var(--accent); }
+
+    /* ════════════════════════════════════════════════
+       BACKGROUND DECORATION
+       ════════════════════════════════════════════════ */
+    .bg-noise {
+      position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      background-image:
+        radial-gradient(ellipse 80% 50% at 50% -10%, rgba(0,120,255,0.12) 0%, transparent 60%),
+        url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+    }
+    .bg-grid {
+      position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      background-image:
+        linear-gradient(rgba(0,224,255,0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,224,255,0.025) 1px, transparent 1px);
+      background-size: 40px 40px;
+    }
+
+    /* ════════════════════════════════════════════════
+       LAYOUT
+       ════════════════════════════════════════════════ */
+    .page-wrapper {
+      position: relative; z-index: 1;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem 5rem;
+    }
+
+    /* ════════════════════════════════════════════════
+       HEADER
+       ════════════════════════════════════════════════ */
+    .page-header {
+      margin-bottom: 2.5rem;
+      padding-bottom: 1.75rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .header-top {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 0.75rem;
+    }
+    .logo-mark {
+      width: 42px; height: 42px;
+      background: linear-gradient(135deg, #00e0ff, #0078ff);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.3rem; flex-shrink: 0;
+    }
+    .page-title {
+      font-size: 1.55rem;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      color: #fff;
+    }
+    .page-title span { color: var(--accent); }
+    .page-subtitle {
+      font-size: 0.875rem;
+      color: var(--text-muted);
+      max-width: 600px;
+    }
+    .header-badges {
+      display: flex; flex-wrap: wrap; gap: 0.5rem;
+      margin-top: 1rem;
+    }
+    .badge {
+      display: inline-flex; align-items: center; gap: 0.3rem;
+      font-size: 0.7rem; font-weight: 600; letter-spacing: 0.06em;
+      text-transform: uppercase; padding: 0.25rem 0.65rem;
+      border-radius: 999px; border: 1px solid;
+    }
+    .badge--cyan  { color: var(--accent);  border-color: rgba(0,224,255,0.25); background: var(--accent-dim); }
+    .badge--green { color: var(--green);   border-color: rgba(16,185,129,0.25); background: var(--green-dim); }
+    .badge--amber { color: var(--amber);   border-color: rgba(245,158,11,0.25); background: var(--amber-dim); }
+
+    /* ════════════════════════════════════════════════
+       ALERT / INFO BANNER
+       ════════════════════════════════════════════════ */
+    .alert {
+      display: flex; gap: 0.75rem; align-items: flex-start;
+      padding: 0.9rem 1.1rem;
+      border-radius: var(--radius);
+      border: 1px solid;
+      margin-bottom: 1.75rem;
+      font-size: 0.85rem;
+      line-height: 1.55;
+    }
+    .alert--amber {
+      background: var(--amber-dim);
+      border-color: rgba(245,158,11,0.25);
+      color: #fcd34d;
+    }
+    .alert__icon { font-size: 1rem; flex-shrink: 0; margin-top: 0.05rem; }
+    .alert strong { color: #fde68a; font-weight: 600; }
+
+    /* ════════════════════════════════════════════════
+       FORM SECTIONS
+       ════════════════════════════════════════════════ */
+    .form-section {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      margin-bottom: 1.25rem;
+      overflow: hidden;
+    }
+    .section-header {
+      display: flex; align-items: center; gap: 0.75rem;
+      padding: 1rem 1.25rem;
+      border-bottom: 1px solid var(--border);
+      background: rgba(255,255,255,0.02);
+    }
+    .section-number {
+      width: 26px; height: 26px; flex-shrink: 0;
+      background: var(--accent-dim);
+      border: 1px solid rgba(0,224,255,0.2);
+      border-radius: 6px;
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--mono);
+      font-size: 0.72rem; font-weight: 700;
+      color: var(--accent);
+    }
+    .section-title {
+      font-size: 0.92rem; font-weight: 600;
+      color: #fff; letter-spacing: -0.01em;
+    }
+    .section-desc {
+      font-size: 0.78rem; color: var(--text-muted);
+      margin-left: auto; text-align: right;
+    }
+    .section-body {
+      padding: 1.25rem;
+    }
+
+    /* ════════════════════════════════════════════════
+       FORM FIELDS
+       ════════════════════════════════════════════════ */
+    .field-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+    .field-grid--3 { grid-template-columns: 1fr 1fr 1fr; }
+    .field-grid--full { grid-template-columns: 1fr; }
+    @media (max-width: 620px) {
+      .field-grid, .field-grid--3 { grid-template-columns: 1fr; }
+    }
+
+    .field {
+      display: flex; flex-direction: column; gap: 0.35rem;
+    }
+    .field--span2 { grid-column: span 2; }
+    @media (max-width: 620px) { .field--span2 { grid-column: span 1; } }
+
+    label {
+      font-size: 0.75rem; font-weight: 600;
+      letter-spacing: 0.06em; text-transform: uppercase;
+      color: var(--text-muted);
+    }
+    label .req { color: var(--accent); margin-left: 2px; }
+    label .hint {
+      font-size: 0.68rem; text-transform: none; letter-spacing: 0;
+      color: var(--text-dim); font-weight: 400; margin-left: 0.35rem;
+    }
+
+    input[type="text"],
+    input[type="number"],
+    input[type="url"],
+    select,
+    textarea {
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--text);
+      font-family: var(--sans);
+      font-size: 0.875rem;
+      padding: 0.6rem 0.85rem;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+      width: 100%;
+    }
+    textarea {
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      resize: vertical;
+      min-height: 90px;
+      line-height: 1.55;
+    }
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--border-focus);
+      background: rgba(0,224,255,0.03);
+      box-shadow: 0 0 0 3px rgba(0,224,255,0.08);
+    }
+    input::placeholder, textarea::placeholder { color: var(--text-dim); }
+    select { appearance: none; cursor: pointer; }
+    select option { background: #111827; }
+
+    input[type="range"] {
+      width: 100%; cursor: pointer; accent-color: var(--accent);
+    }
+    .range-row {
+      display: flex; align-items: center; gap: 0.75rem;
+    }
+    .range-value {
+      font-family: var(--mono); font-size: 0.9rem; font-weight: 700;
+      color: var(--accent); min-width: 48px; text-align: right;
+    }
+
+    /* Toggle switch */
+    .toggle-row {
+      display: flex; align-items: center;
+      justify-content: space-between;
+      padding: 0.7rem 0;
+    }
+    .toggle-row + .toggle-row {
+      border-top: 1px solid var(--border);
+    }
+    .toggle-label { display: flex; flex-direction: column; gap: 0.15rem; }
+    .toggle-label span { font-size: 0.875rem; font-weight: 500; color: var(--text); }
+    .toggle-label small { font-size: 0.75rem; color: var(--text-muted); }
+    .switch { position: relative; display: inline-block; width: 40px; height: 22px; flex-shrink: 0; }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider {
+      position: absolute; cursor: pointer;
+      inset: 0; background: rgba(255,255,255,0.1);
+      border-radius: 999px;
+      transition: background 0.2s;
+    }
+    .slider::before {
+      content: ''; position: absolute;
+      height: 16px; width: 16px;
+      left: 3px; bottom: 3px;
+      background: #fff; border-radius: 50%;
+      transition: transform 0.2s;
+    }
+    .switch input:checked + .slider { background: var(--accent); }
+    .switch input:checked + .slider::before { transform: translateX(18px); }
+
+    /* Color picker row */
+    .color-row {
+      display: flex; align-items: center; gap: 0.6rem;
+    }
+    input[type="color"] {
+      width: 36px; height: 36px; padding: 2px;
+      border-radius: 8px; cursor: pointer;
+      background: var(--bg-input); border: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .color-hex {
+      font-family: var(--mono); font-size: 0.82rem;
+      color: var(--text); flex: 1;
+    }
+
+    /* ════════════════════════════════════════════════
+       AD CODE TABS
+       ════════════════════════════════════════════════ */
+    .ad-tabs {
+      display: flex; gap: 0.4rem; flex-wrap: wrap;
+      margin-bottom: 1rem;
+    }
+    .ad-tab {
+      padding: 0.35rem 0.85rem;
+      border-radius: 6px; border: 1px solid var(--border);
+      background: none; color: var(--text-muted);
+      font-family: var(--sans); font-size: 0.78rem; font-weight: 600;
+      cursor: pointer; transition: all 0.15s;
+      letter-spacing: 0.03em;
+    }
+    .ad-tab.active, .ad-tab:hover {
+      background: var(--accent-dim);
+      border-color: rgba(0,224,255,0.3);
+      color: var(--accent);
+    }
+    .ad-panel { display: none; }
+    .ad-panel.active { display: block; }
+    .ad-note {
+      font-size: 0.75rem; color: var(--text-muted);
+      margin-top: 0.5rem; line-height: 1.5;
+    }
+    .ad-note code { color: var(--amber); }
+
+    /* ════════════════════════════════════════════════
+       GENERATE BUTTON
+       ════════════════════════════════════════════════ */
+    .generate-btn {
+      display: flex; align-items: center; justify-content: center;
+      gap: 0.6rem;
+      width: 100%; padding: 0.9rem 1.5rem;
+      background: linear-gradient(135deg, #00e0ff, #0078ff);
+      color: #020e1a; border: none; border-radius: var(--radius-lg);
+      font-family: var(--sans); font-size: 1rem; font-weight: 700;
+      cursor: pointer; letter-spacing: -0.01em;
+      box-shadow: 0 4px 24px rgba(0,200,255,0.25);
+      transition: transform 0.15s, box-shadow 0.2s;
+      margin-bottom: 2rem;
+    }
+    .generate-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 36px rgba(0,200,255,0.4);
+    }
+    .generate-btn:active { transform: scale(0.99); }
+    .generate-btn .btn-icon { font-size: 1.1rem; }
+
+    /* ════════════════════════════════════════════════
+       OUTPUT SECTION
+       ════════════════════════════════════════════════ */
+    #output-section { display: none; }
+    #output-section.visible { display: block; }
+
+    .output-header {
+      display: flex; align-items: center; gap: 0.75rem;
+      margin-bottom: 1rem;
+    }
+    .output-title {
+      font-size: 1.05rem; font-weight: 700; color: #fff;
+      letter-spacing: -0.02em;
+    }
+    .success-pill {
+      display: inline-flex; align-items: center; gap: 0.3rem;
+      font-size: 0.7rem; font-weight: 700; letter-spacing: 0.06em;
+      text-transform: uppercase;
+      background: var(--green-dim);
+      border: 1px solid rgba(16,185,129,0.3);
+      color: var(--green); border-radius: 999px;
+      padding: 0.2rem 0.6rem;
+    }
+
+    .output-tabs {
+      display: flex; gap: 0.4rem; margin-bottom: 0;
+    }
+    .out-tab {
+      padding: 0.55rem 1.1rem;
+      border-radius: var(--radius) var(--radius) 0 0;
+      border: 1px solid var(--border); border-bottom: none;
+      background: var(--bg-card); color: var(--text-muted);
+      font-family: var(--sans); font-size: 0.82rem; font-weight: 600;
+      cursor: pointer; transition: all 0.15s;
+    }
+    .out-tab.active {
+      background: var(--bg-section);
+      color: var(--accent);
+      border-color: rgba(0,224,255,0.3);
+    }
+
+    .output-panel {
+      display: none;
+      background: var(--bg-section);
+      border: 1px solid rgba(0,224,255,0.2);
+      border-radius: 0 var(--radius-lg) var(--radius-lg) var(--radius-lg);
+      overflow: hidden;
+    }
+    .output-panel.active { display: block; }
+
+    .output-toolbar {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0.65rem 1rem;
+      background: rgba(0,0,0,0.3);
+      border-bottom: 1px solid var(--border);
+    }
+    .output-filename {
+      font-family: var(--mono); font-size: 0.78rem; color: var(--text-muted);
+    }
+    .output-filename span { color: var(--accent); }
+
+    .copy-btn {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      padding: 0.35rem 0.8rem;
+      background: var(--accent-dim);
+      border: 1px solid rgba(0,224,255,0.25);
+      border-radius: 6px;
+      color: var(--accent); font-family: var(--sans);
+      font-size: 0.75rem; font-weight: 600;
+      cursor: pointer; transition: all 0.15s; letter-spacing: 0.02em;
+    }
+    .copy-btn:hover { background: rgba(0,224,255,0.18); }
+    .copy-btn.copied {
+      background: var(--green-dim);
+      border-color: rgba(16,185,129,0.3);
+      color: var(--green);
+    }
+
+    .code-block {
+      padding: 1.25rem;
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      line-height: 1.7;
+      color: #94a3b8;
+      white-space: pre;
+      overflow-x: auto;
+      max-height: 480px;
+      overflow-y: auto;
+      tab-size: 2;
+    }
+    /* Syntax-like tinting via spans injected by JS */
+    .code-block .c-comment { color: #475569; }
+    .code-block .c-key     { color: #7dd3fc; }
+    .code-block .c-str     { color: #86efac; }
+    .code-block .c-num     { color: #fda4af; }
+    .code-block .c-bool    { color: #c4b5fd; }
+    .code-block .c-kw      { color: #93c5fd; }
+
+    /* ════════════════════════════════════════════════
+       INSTRUCTIONS BOX
+       ════════════════════════════════════════════════ */
+    .instructions {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 1.25rem;
+      margin-top: 1.5rem;
+    }
+    .instructions h3 {
+      font-size: 0.85rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.08em;
+      color: var(--text-muted); margin-bottom: 0.85rem;
+    }
+    .steps { display: flex; flex-direction: column; gap: 0.6rem; }
+    .step {
+      display: flex; gap: 0.75rem; align-items: flex-start;
+      font-size: 0.85rem; color: var(--text-muted);
+    }
+    .step-num {
+      width: 22px; height: 22px; flex-shrink: 0;
+      background: var(--accent-dim);
+      border: 1px solid rgba(0,224,255,0.2);
+      border-radius: 6px;
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--mono); font-size: 0.65rem;
+      font-weight: 700; color: var(--accent);
+    }
+    .step code { color: var(--amber); font-size: 0.8em; }
+
+    /* ════════════════════════════════════════════════
+       FOOTER
+       ════════════════════════════════════════════════ */
+    .page-footer {
+      margin-top: 3rem; padding-top: 1.25rem;
+      border-top: 1px solid var(--border);
+      text-align: center;
+      font-size: 0.78rem; color: var(--text-dim);
+    }
+    .page-footer span { color: var(--text-muted); }
+  </style>
+</head>
+<body>
+
+  <div class="bg-noise" aria-hidden="true"></div>
+  <div class="bg-grid"  aria-hidden="true"></div>
+
+  <div class="page-wrapper">
+
+    <!-- ══════════════════════════════════════════
+         PAGE HEADER
+         ══════════════════════════════════════════ -->
+    <header class="page-header">
+      <div class="header-top">
+        <div class="logo-mark">⚡</div>
+        <h1 class="page-title">Link<span>Vault</span> Config Tool</h1>
+      </div>
+      <p class="page-subtitle">
+        Fill out the form below and click <strong style="color:#fff">Generate</strong> to produce
+        ready-to-use <code>site-config.js</code> and <code>ads.js</code> files for your installation.
+        No coding required.
+      </p>
+      <div class="header-badges">
+        <span class="badge badge--cyan">⚡ Local Only — No Server Needed</span>
+        <span class="badge badge--green">✓ No Data Sent Anywhere</span>
+        <span class="badge badge--amber">⚠ Delete This Folder After Use</span>
+      </div>
+    </header>
+
+    <!-- ══════════════════════════════════════════
+         SECURITY WARNING
+         ══════════════════════════════════════════ -->
+    <div class="alert alert--amber" role="alert">
+      <span class="alert__icon">⚠</span>
+      <div>
+        <strong>Security reminder:</strong> Delete or password-protect this
+        <code>/admin/</code> folder before going live. It runs entirely in your browser —
+        no passwords or ad codes are transmitted anywhere — but leaving it publicly
+        accessible lets anyone on the internet regenerate your config.
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════
+         FORM
+         ══════════════════════════════════════════ -->
+    <form id="config-form" novalidate>
+
+      <!-- ─── SECTION 1: Branding ─── -->
+      <div class="form-section">
+        <div class="section-header">
+          <div class="section-number">01</div>
+          <h2 class="section-title">Branding &amp; Site Identity</h2>
+          <span class="section-desc">Shown to visitors</span>
+        </div>
+        <div class="section-body">
+          <div class="field-grid">
+            <div class="field">
+              <label for="brand-name">Brand / Site Name <span class="req">*</span></label>
+              <input type="text" id="brand-name" placeholder="e.g. FileHub Pro"
+                     value="LinkVault" required />
+            </div>
+            <div class="field">
+              <label for="site-url">Live Site URL <span class="req">*</span>
+                <span class="hint">— no trailing slash</span>
+              </label>
+              <input type="url" id="site-url" placeholder="https://yourdomain.com" required />
+            </div>
+            <div class="field">
+              <label for="tagline">Tagline / Description</label>
+              <input type="text" id="tagline"
+                     placeholder="Lock your links, earn from every visit." />
+            </div>
+            <div class="field">
+              <label for="author-name">Author / Publisher Name</label>
+              <input type="text" id="author-name" placeholder="MD KAWSAR" value="MD KAWSAR" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ─── SECTION 2: Timer & Behaviour ─── -->
+      <div class="form-section">
+        <div class="section-header">
+          <div class="section-number">02</div>
+          <h2 class="section-title">Timer &amp; Behaviour</h2>
+          <span class="section-desc">Countdown settings</span>
+        </div>
+        <div class="section-body">
+          <div class="field-grid">
+
+            <div class="field">
+              <label for="timer-seconds">Countdown Duration
+                <span class="hint">— 5 to 60 seconds</span>
+              </label>
+              <div class="range-row">
+                <input type="range" id="timer-seconds"
+                       min="5" max="60" step="1" value="10"
+                       oninput="document.getElementById('timer-val').textContent=this.value+'s'" />
+                <span class="range-value" id="timer-val">10s</span>
+              </div>
+            </div>
+
+            <div class="field">
+              <label for="locked-filename">Locked Page Filename</label>
+              <input type="text" id="locked-filename"
+                     placeholder="locked.html" value="locked.html" />
+            </div>
+
+          </div>
+
+          <div style="margin-top:1rem;">
+            <div class="toggle-row">
+              <div class="toggle-label">
+                <span>Enable Anti-AdBlock Detection</span>
+                <small>Show overlay to visitors using ad blockers</small>
+              </div>
+              <label class="switch">
+                <input type="checkbox" id="enable-adblock" checked />
+                <span class="slider"></span>
+              </label>
+            </div>
+            <div class="toggle-row">
+              <div class="toggle-label">
+                <span>Pause Timer When Tab is Hidden</span>
+                <small>Uses the Page Visibility API — recommended</small>
+              </div>
+              <label class="switch">
+                <input type="checkbox" id="enable-visibility" checked />
+                <span class="slider"></span>
+              </label>
+            </div>
+            <div class="toggle-row">
+              <div class="toggle-label">
+                <span>Open Destination in New Tab</span>
+                <small>Uses target="_blank" on the Get Link button</small>
+              </div>
+              <label class="switch">
+                <input type="checkbox" id="open-new-tab" checked />
+                <span class="slider"></span>
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ─── SECTION 3: Theme Colors ─── -->
+      <div class="form-section">
+        <div class="section-header">
+          <div class="section-number">03</div>
+          <h2 class="section-title">Theme Colors</h2>
+          <span class="section-desc">Injected into CSS variables</span>
+        </div>
+        <div class="section-body">
+          <div class="field-grid field-grid--3">
+            <div class="field">
+              <label>Page Background</label>
+              <div class="color-row">
+                <input type="color" id="color-bg" value="#080c14"
+                       oninput="document.getElementById('hex-bg').value=this.value" />
+                <input type="text" id="hex-bg" class="color-hex" value="#080c14"
+                       oninput="syncColor('color-bg','hex-bg')" maxlength="7" />
+              </div>
+            </div>
+            <div class="field">
+              <label>Accent / Highlight Color</label>
+              <div class="color-row">
+                <input type="color" id="color-accent" value="#00e0ff"
+                       oninput="document.getElementById('hex-accent').value=this.value" />
+                <input type="text" id="hex-accent" class="color-hex" value="#00e0ff"
+                       oninput="syncColor('color-accent','hex-accent')" maxlength="7" />
+              </div>
+            </div>
+            <div class="field">
+              <label>Card / Surface Color</label>
+              <div class="color-row">
+                <input type="color" id="color-card" value="#0e1420"
+                       oninput="document.getElementById('hex-card').value=this.value" />
+                <input type="text" id="hex-card" class="color-hex" value="#0e1420"
+                       oninput="syncColor('color-card','hex-card')" maxlength="7" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ─── SECTION 4: Ad Network ─── -->
+      <div class="form-section">
+        <div class="section-header">
+          <div class="section-number">04</div>
+          <h2 class="section-title">Ad Network Integration</h2>
+          <span class="section-desc">Paste your ad codes below</span>
+        </div>
+        <div class="section-body">
+
+          <!--
+            HOW TO GET YOUR AD CODES:
+            • Adsterra     : dashboard → Sites → Get Code → Banner / Native
+            • PropellerAds : dashboard → My Sites → Ad Units → Get Code
+            • HilltopAds   : dashboard → Websites → Ad Spots → Get Code
+            Paste the FULL <script> tag or <div>+<script> block into each box.
+          -->
+
+          <div class="ad-tabs" role="tablist">
+            <button type="button" class="ad-tab active" onclick="switchAdTab('adsterra',this)">Adsterra</button>
+            <button type="button" class="ad-tab"        onclick="switchAdTab('propeller',this)">PropellerAds</button>
+            <button type="button" class="ad-tab"        onclick="switchAdTab('hilltop',this)">HilltopAds</button>
+            <button type="button" class="ad-tab"        onclick="switchAdTab('custom',this)">Custom</button>
+          </div>
+
+          <!-- Adsterra -->
+          <div class="ad-panel active" id="panel-adsterra">
+            <div class="field-grid">
+              <div class="field">
+                <label>Header Banner Code
+                  <span class="hint">— 728×90 leaderboard</span>
+                </label>
+                <textarea id="ad-header-adsterra"
+                          placeholder="<!-- Paste your Adsterra header banner script here -->"></textarea>
+              </div>
+              <div class="field">
+                <label>Content Square Code
+                  <span class="hint">— 300×250 medium rectangle</span>
+                </label>
+                <textarea id="ad-content-adsterra"
+                          placeholder="<!-- Paste your Adsterra content square script here -->"></textarea>
+              </div>
+              <div class="field">
+                <label>Sticky Footer Code
+                  <span class="hint">— 728×90 or mobile banner</span>
+                </label>
+                <textarea id="ad-sticky-adsterra"
+                          placeholder="<!-- Paste your Adsterra sticky footer script here -->"></textarea>
+              </div>
+              <div class="field">
+                <label>Pop-under / Direct Link Code
+                  <span class="hint">— optional, high CPM</span>
+                </label>
+                <textarea id="ad-popunder-adsterra"
+                          placeholder="<!-- Paste your Adsterra pop-under script here -->"></textarea>
+              </div>
+            </div>
+            <p class="ad-note">
+              In your Adsterra dashboard: <strong>Sites → Get Code</strong>.
+              For pop-unders choose <strong>Social Bar</strong> or <strong>Direct Link</strong>.
+              Each code block is a complete <code>&lt;script&gt;</code> tag.
+            </p>
+          </div>
+
+          <!-- PropellerAds -->
+          <div class="ad-panel" id="panel-propeller">
+            <div class="field-grid">
+              <div class="field">
+                <label>Banner / Interstitial Code</label>
+                <textarea id="ad-header-propeller"
+                          placeholder="<!-- Paste your PropellerAds banner script here -->"></textarea>
+              </div>
+              <div class="field">
+                <label>Push / OnClick Code</label>
+                <textarea id="ad-content-propeller"
+                          placeholder="<!-- Paste your PropellerAds push or onclick script here -->"></textarea>
+              </div>
+            </div>
+            <p class="ad-note">
+              In PropellerAds: <strong>My Sites → Ad Units → Get Code</strong>.
+              For Push Notifications use the <code>sw.min.js</code> they provide
+              alongside the script tag.
+            </p>
+          </div>
+
+          <!-- HilltopAds -->
+          <div class="ad-panel" id="panel-hilltop">
+            <div class="field-grid">
+              <div class="field">
+                <label>Display Banner Code</label>
+                <textarea id="ad-header-hilltop"
+                          placeholder="<!-- Paste your HilltopAds banner code here -->"></textarea>
+              </div>
+              <div class="field">
+                <label>Pop-under Code</label>
+                <textarea id="ad-content-hilltop"
+                          placeholder="<!-- Paste your HilltopAds pop-under code here -->"></textarea>
+              </div>
+            </div>
+            <p class="ad-note">
+              In HilltopAds: <strong>Websites → Ad Spots → Get Code</strong>.
+              Copy the complete script block including any wrapper div.
+            </p>
+          </div>
+
+          <!-- Custom -->
+          <div class="ad-panel" id="panel-custom">
+            <div class="field-grid">
+              <div class="field">
+                <label>Header Ad Code (any network)</label>
+                <textarea id="ad-header-custom"
+                          placeholder="<!-- Any ad network header code -->"></textarea>
+              </div>
+              <div class="field">
+                <label>Content Ad Code (any network)</label>
+                <textarea id="ad-content-custom"
+                          placeholder="<!-- Any ad network content code -->"></textarea>
+              </div>
+              <div class="field">
+                <label>Sticky Footer Ad Code</label>
+                <textarea id="ad-sticky-custom"
+                          placeholder="<!-- Any ad network sticky footer code -->"></textarea>
+              </div>
+              <div class="field">
+                <label>Pop-under / Interstitial Code</label>
+                <textarea id="ad-popunder-custom"
+                          placeholder="<!-- Any ad network pop-under code -->"></textarea>
+              </div>
+            </div>
+            <p class="ad-note">
+              Paste any HTML/script from any ad network. The code will be injected
+              verbatim into the correct placeholders in <code>locked.html</code>.
+            </p>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ─── SECTION 5: Social / SEO ─── -->
+      <div class="form-section">
+        <div class="section-header">
+          <div class="section-number">05</div>
+          <h2 class="section-title">SEO &amp; Open Graph</h2>
+          <span class="section-desc">Social sharing previews</span>
+        </div>
+        <div class="section-body">
+          <div class="field-grid">
+            <div class="field">
+              <label for="og-title">OG Title</label>
+              <input type="text" id="og-title"
+                     placeholder="LinkVault — Monetize Every Click" />
+            </div>
+            <div class="field">
+              <label for="og-image">OG Image URL
+                <span class="hint">— 1200×630 PNG</span>
+              </label>
+              <input type="url" id="og-image"
+                     placeholder="https://yourdomain.com/assets/img/og-cover.webp" />
+            </div>
+            <div class="field field--span2">
+              <label for="og-desc">OG Description</label>
+              <input type="text" id="og-desc"
+                     placeholder="Lock your download links behind a smart ad gateway. Earn on every visit." />
+            </div>
+            <div class="field">
+              <label for="twitter-handle">Twitter / X Handle
+                <span class="hint">— include @</span>
+              </label>
+              <input type="text" id="twitter-handle" placeholder="@yourtwitterhandle" />
+            </div>
+            <div class="field">
+              <label for="ga-id">Google Analytics ID
+                <span class="hint">— optional, G-XXXXXXXXXX</span>
+              </label>
+              <input type="text" id="ga-id" placeholder="G-XXXXXXXXXX" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ─── GENERATE BUTTON ─── -->
+      <button type="button" class="generate-btn" onclick="generateConfig()">
+        <span class="btn-icon">⚙</span>
+        Generate Configuration Files
+      </button>
+
+    </form><!-- /#config-form -->
+
+    <!-- ══════════════════════════════════════════
+         OUTPUT SECTION
+         ══════════════════════════════════════════ -->
+    <section id="output-section" aria-live="polite">
+
+      <div class="output-header">
+        <h2 class="output-title">Generated Files</h2>
+        <span class="success-pill">✓ Ready to Copy</span>
+      </div>
+
+      <div class="output-tabs" role="tablist">
+        <button type="button" class="out-tab active"
+                onclick="switchOutTab('site-config',this)">site-config.js</button>
+        <button type="button" class="out-tab"
+                onclick="switchOutTab('ads',this)">ads.js</button>
+      </div>
+
+      <!-- site-config.js output -->
+      <div class="output-panel active" id="out-site-config">
+        <div class="output-toolbar">
+          <span class="output-filename">assets/js/<span>site-config.js</span></span>
+          <button type="button" class="copy-btn" onclick="copyOutput('code-site-config',this)">
+            ⎘ Copy Code
+          </button>
+        </div>
+        <div class="code-block" id="code-site-config"></div>
+      </div>
+
+      <!-- ads.js output -->
+      <div class="output-panel" id="out-ads">
+        <div class="output-toolbar">
+          <span class="output-filename">assets/js/<span>ads.js</span></span>
+          <button type="button" class="copy-btn" onclick="copyOutput('code-ads',this)">
+            ⎘ Copy Code
+          </button>
+        </div>
+        <div class="code-block" id="code-ads"></div>
+      </div>
+
+      <!-- Instructions -->
+      <div class="instructions">
+        <h3>📋 What to do next</h3>
+        <div class="steps">
+          <div class="step">
+            <div class="step-num">1</div>
+            <div>Copy the <code>site-config.js</code> tab content and save it as
+              <code>assets/js/site-config.js</code> in your project folder.</div>
+          </div>
+          <div class="step">
+            <div class="step-num">2</div>
+            <div>Copy the <code>ads.js</code> tab content and save it as
+              <code>assets/js/ads.js</code>, replacing the existing placeholder file.</div>
+          </div>
+          <div class="step">
+            <div class="step-num">3</div>
+            <div>In <code>index.html</code> and <code>locked.html</code>, make sure
+              <code>&lt;script src="assets/js/site-config.js"&gt;</code> is loaded
+              <strong>before</strong> <code>script.js</code>.</div>
+          </div>
+          <div class="step">
+            <div class="step-num">4</div>
+            <div>Upload all changed files to your server. Test a link to verify ads are showing.</div>
+          </div>
+          <div class="step">
+            <div class="step-num">5</div>
+            <div>Delete or restrict access to this <code>/admin/</code> folder on your live server.</div>
+          </div>
+        </div>
+      </div>
+
+    </section><!-- /#output-section -->
+
+    <footer class="page-footer">
+      LinkVault Config Tool · Author: <span>MD KAWSAR</span> ·
+      Runs 100% locally — no data leaves your browser
+    </footer>
+
+  </div><!-- /.page-wrapper -->
+
+  <script>
+    /* ================================================================
+       ADMIN PANEL — JAVASCRIPT
+       ================================================================ */
+
+    /* ── Sync color picker ↔ hex text input ── */
+    function syncColor(pickerId, hexId) {
+      var hex = document.getElementById(hexId).value;
+      if (/^#[0-9a-fA-F]{6}$/.test(hex)) {
+        document.getElementById(pickerId).value = hex;
+      }
+    }
+
+    /* ── Switch ad network input tabs ── */
+    function switchAdTab(network, btn) {
+      document.querySelectorAll('.ad-tab').forEach(function(b){ b.classList.remove('active'); });
+      document.querySelectorAll('.ad-panel').forEach(function(p){ p.classList.remove('active'); });
+      btn.classList.add('active');
+      document.getElementById('panel-' + network).classList.add('active');
+    }
+
+    /* ── Switch output file tabs ── */
+    function switchOutTab(name, btn) {
+      document.querySelectorAll('.out-tab').forEach(function(b){ b.classList.remove('active'); });
+      document.querySelectorAll('.output-panel').forEach(function(p){ p.classList.remove('active'); });
+      btn.classList.add('active');
+      document.getElementById('out-' + name).classList.add('active');
+    }
+
+    /* ── Escape HTML for safe insertion into code block ── */
+    function esc(str) {
+      return String(str)
+        .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+        .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    /* ── Get value from any active ad panel textarea ── */
+    function getAdCode(slot) {
+      /* Try active panel first, then fall back to others */
+      var ids = [
+        'ad-' + slot + '-adsterra',
+        'ad-' + slot + '-propeller',
+        'ad-' + slot + '-hilltop',
+        'ad-' + slot + '-custom'
+      ];
+      for (var i = 0; i < ids.length; i++) {
+        var el = document.getElementById(ids[i]);
+        if (el && el.value.trim()) return el.value.trim();
+      }
+      return '';
+    }
+
+    /* ── Minimal JS syntax coloring for display ── */
+    function colorize(code) {
+      return esc(code)
+        /* comments */
+        .replace(/(\/\/[^\n]*|\/\*[\s\S]*?\*\/)/g, '<span class="c-comment">$1</span>')
+        /* strings */
+        .replace(/(&quot;[^&]*?&quot;|&#39;[^&#]*?&#39;|`[^`]*?`)/g, '<span class="c-str">$1</span>')
+        /* keywords */
+        .replace(/\b(const|let|var|function|return|if|else|true|false|null|window|document)\b/g,
+                 '<span class="c-kw">$1</span>')
+        /* numbers */
+        .replace(/\b(\d+)\b/g, '<span class="c-num">$1</span>');
+    }
+
+    /* ================================================================
+       MAIN GENERATOR FUNCTION
+       Called when the user clicks "Generate Configuration Files".
+       Reads all form values and builds two JS file strings.
+       ================================================================ */
+    function generateConfig() {
+
+      /* ── 1. Read all form values ── */
+      var brandName       = document.getElementById('brand-name').value.trim()       || 'LinkVault';
+      var siteUrl         = document.getElementById('site-url').value.trim()         || 'https://yourdomain.com';
+      var tagline         = document.getElementById('tagline').value.trim()          || '';
+      var authorName      = document.getElementById('author-name').value.trim()      || 'MD KAWSAR';
+      var timerSeconds    = parseInt(document.getElementById('timer-seconds').value) || 10;
+      var lockedFilename  = document.getElementById('locked-filename').value.trim()  || 'locked.html';
+      var enableAdblock   = document.getElementById('enable-adblock').checked;
+      var enableVisibility= document.getElementById('enable-visibility').checked;
+      var openNewTab      = document.getElementById('open-new-tab').checked;
+      var colorBg         = document.getElementById('hex-bg').value.trim()           || '#080c14';
+      var colorAccent     = document.getElementById('hex-accent').value.trim()       || '#00e0ff';
+      var colorCard       = document.getElementById('hex-card').value.trim()         || '#0e1420';
+      var ogTitle         = document.getElementById('og-title').value.trim()         || brandName + ' — Monetize Every Click';
+      var ogDesc          = document.getElementById('og-desc').value.trim()          || '';
+      var ogImage         = document.getElementById('og-image').value.trim()         || siteUrl + '/assets/img/og-cover.webp';
+      var twitterHandle   = document.getElementById('twitter-handle').value.trim()   || '';
+      var gaId            = document.getElementById('ga-id').value.trim()            || '';
+
+      /* ── 2. Collect ad codes ── */
+      var adHeader   = getAdCode('header')   || '<!-- Add your header ad code here -->';
+      var adContent  = getAdCode('content')  || '<!-- Add your content ad code here -->';
+      var adSticky   = getAdCode('sticky')   || '<!-- Add your sticky footer ad code here -->';
+      var adPopunder = getAdCode('popunder') || '<!-- Add your pop-under ad code here -->';
+
+      /* ================================================================
+         BUILD site-config.js
+         This file is loaded by index.html and locked.html BEFORE script.js.
+         It sets global config variables that script.js reads.
+         ================================================================ */
+      var now = new Date().toISOString().slice(0,10);
+
+      var siteConfigCode = [
+        '/* ================================================================',
+        '   ' + brandName + ' — Site Configuration',
+        '   File    : assets/js/site-config.js',
+        '   Author  : ' + authorName,
+        '   Generated: ' + now + ' by LinkVault Config Tool',
+        '',
+        '   HOW TO USE:',
+        '   Load this file in <head> BEFORE script.js:',
+        '     <script src="assets/js/site-config.js"><\\/script>',
+        '     <script src="assets/js/script.js"><\\/script>',
+        '',
+        '   To change a setting, edit the value on the right side of',
+        '   each line, save the file, and re-upload it to your server.',
+        '================================================================ */',
+        '',
+        "'use strict';",
+        '',
+        '/* ── Branding ───────────────────────────────────────────── */',
+        'window.LV_SITE = {',
+        '  BRAND_NAME   : "' + brandName + '",',
+        '  SITE_URL     : "' + siteUrl + '",',
+        '  TAGLINE      : "' + tagline + '",',
+        '  AUTHOR       : "' + authorName + '",',
+        '',
+        '  /* ── Timer ──────────────────────────────────────────── */',
+        '  // How many seconds the countdown lasts.',
+        '  // Recommended: 10–30 seconds for best ad revenue.',
+        '  COUNTDOWN_SECONDS : ' + timerSeconds + ',',
+        '',
+        '  // The filename of your locked redirect page.',
+        '  // Change this if you rename locked.html.',
+        '  LOCKED_PAGE : "' + lockedFilename + '",',
+        '',
+        '  /* ── Features ───────────────────────────────────────── */',
+        '  // true  = show overlay when an ad blocker is detected',
+        '  // false = ignore ad blockers (not recommended)',
+        '  ENABLE_ANTI_ADBLOCK : ' + enableAdblock + ',',
+        '',
+        '  // true  = pause countdown when user switches to another tab',
+        '  // false = timer continues even if tab is hidden',
+        '  ENABLE_VISIBILITY_PAUSE : ' + enableVisibility + ',',
+        '',
+        '  // true  = destination opens in a new tab (_blank)',
+        '  // false = destination opens in the same tab',
+        '  OPEN_IN_NEW_TAB : ' + openNewTab + ',',
+        '',
+        '  /* ── Theme Colors ───────────────────────────────────── */',
+        '  // These are injected as CSS custom properties at runtime.',
+        '  // Format: valid CSS hex color string.',
+        '  THEME : {',
+        '    BG     : "' + colorBg + '",    // page background',
+        '    ACCENT : "' + colorAccent + '", // highlight / link color',
+        '    CARD   : "' + colorCard + '",   // card surface color',
+        '  },',
+        '',
+        '  /* ── SEO / Open Graph ───────────────────────────────── */',
+        '  OG_TITLE  : "' + ogTitle + '",',
+        '  OG_DESC   : "' + ogDesc + '",',
+        '  OG_IMAGE  : "' + ogImage + '",',
+        '  TWITTER   : "' + twitterHandle + '",',
+        (gaId ? '  GA_ID     : "' + gaId + '",  // Google Analytics Measurement ID' : '  GA_ID     : "",  // Google Analytics — leave empty to disable'),
+        '};',
+        '',
+        '/* ── Apply theme colors to CSS variables immediately ─────── */',
+        '/* This runs before the stylesheet so there is no color flash. */',
+        '(function applyTheme() {',
+        '  var t = window.LV_SITE && window.LV_SITE.THEME;',
+        '  if (!t) return;',
+        '  var r = document.documentElement.style;',
+        '  if (t.BG)     r.setProperty("--clr-bg",      t.BG);',
+        '  if (t.ACCENT) r.setProperty("--clr-accent",  t.ACCENT);',
+        '  if (t.CARD)   r.setProperty("--clr-surface",  t.CARD);',
+        '})();',
+        '',
+        (gaId ? [
+          '/* ── Google Analytics ─────────────────────────────────── */',
+          'if (window.LV_SITE.GA_ID) {',
+          '  var _ga = document.createElement("script");',
+          '  _ga.async = true;',
+          '  _ga.src = "https://www.googletagmanager.com/gtag/js?id=" + window.LV_SITE.GA_ID;',
+          '  document.head.appendChild(_ga);',
+          '  window.dataLayer = window.dataLayer || [];',
+          '  function gtag(){ dataLayer.push(arguments); }',
+          '  gtag("js", new Date());',
+          '  gtag("config", window.LV_SITE.GA_ID);',
+          '}',
+        ].join('\n') : '/* Google Analytics not configured. */'),
+      ].join('\n');
+
+      /* ================================================================
+         BUILD ads.js
+         This file contains all ad network scripts.
+         It is loaded at the BOTTOM of locked.html body.
+         ================================================================ */
+      var adsCode = [
+        '/* ================================================================',
+        '   ' + brandName + ' — Ad Network Configuration',
+        '   File    : assets/js/ads.js',
+        '   Author  : ' + authorName,
+        '   Generated: ' + now + ' by LinkVault Config Tool',
+        '',
+        '   HOW IT WORKS:',
+        '   This file injects your ad codes into the correct placeholder',
+        '   divs in locked.html at runtime. It also handles the sticky',
+        '   footer close button.',
+        '',
+        '   AD SLOT IDs (in locked.html):',
+        '     #ad-header-placeholder  → Header leaderboard (728×90)',
+        '     #ad-content-placeholder → Content rectangle  (300×250)',
+        '     #ad-sticky-placeholder  → Sticky footer      (728×90)',
+        '     Pop-under scripts run on page load automatically.',
+        '',
+        '   TO UPDATE AN AD CODE LATER:',
+        '   Find the correct slot section below and replace the innerHTML',
+        '   string with your new ad code. Re-upload only ads.js.',
+        '================================================================ */',
+        '',
+        "'use strict';",
+        '',
+        '(function initAds() {',
+        '  /* Only run on the locked page — bail out on index.html */',
+        "  if (!document.getElementById('ad-header-placeholder')) return;",
+        '',
+        '  /* ── Utility: safely inject code into a placeholder div ── */',
+        '  function injectAd(id, html) {',
+        '    var el = document.getElementById(id);',
+        '    if (!el || !html.trim()) return;',
+        '    el.innerHTML = html;',
+        '  }',
+        '',
+        '  /* ════════════════════════════════════════════════════════',
+        '     HEADER BANNER AD (728×90 Leaderboard)',
+        '     Displayed at the very top of locked.html.',
+        '     ════════════════════════════════════════════════════════ */',
+        "  injectAd('ad-header-placeholder', [",
+        "    '" + (adHeader.replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/\n/g,"',\n    '")) + "'",
+        "  ].join('\\n'));",
+        '',
+        '  /* ════════════════════════════════════════════════════════',
+        '     CONTENT SQUARE AD (300×250 Medium Rectangle)',
+        '     Displayed beside or below the locked card.',
+        '     ════════════════════════════════════════════════════════ */',
+        "  injectAd('ad-content-placeholder', [",
+        "    '" + (adContent.replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/\n/g,"',\n    '")) + "'",
+        "  ].join('\\n'));",
+        '',
+        '  /* ════════════════════════════════════════════════════════',
+        '     STICKY FOOTER AD (728×90)',
+        '     Fixed to the bottom of the screen.',
+        '     ════════════════════════════════════════════════════════ */',
+        "  injectAd('ad-sticky-placeholder', [",
+        "    '" + (adSticky.replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/\n/g,"',\n    '")) + "'",
+        "  ].join('\\n'));",
+        '',
+        '  /* ════════════════════════════════════════════════════════',
+        '     POP-UNDER / DIRECT LINK AD',
+        '     Runs immediately on page load. Does not inject into a div.',
+        '     ════════════════════════════════════════════════════════ */',
+        '  (function runPopunder() {',
+        '    /* Inline the pop-under snippet so it fires on load */',
+        '    var script = document.createElement("script");',
+        '    script.textContent = ' + JSON.stringify(adPopunder) + ';',
+        '    document.body.appendChild(script);',
+        '  })();',
+        '',
+        '})();',
+      ].join('\n');
+
+      /* ── 3. Render output to code blocks ── */
+      document.getElementById('code-site-config').innerHTML = colorize(siteConfigCode);
+      document.getElementById('code-ads').innerHTML         = colorize(adsCode);
+
+      /* Store raw text for clipboard copy */
+      document.getElementById('code-site-config').dataset.raw = siteConfigCode;
+      document.getElementById('code-ads').dataset.raw         = adsCode;
+
+      /* ── 4. Show output section ── */
+      var outSection = document.getElementById('output-section');
+      outSection.classList.add('visible');
+      outSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    /* ── Copy code to clipboard ── */
+    function copyOutput(codeBlockId, btn) {
+      var raw = document.getElementById(codeBlockId).dataset.raw || '';
+      if (!raw) return;
+
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(raw).then(function() {
+          showCopied(btn);
+        }).catch(function() { fallbackCopy(raw, btn); });
+      } else {
+        fallbackCopy(raw, btn);
+      }
+    }
+
+    function fallbackCopy(text, btn) {
+      var ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.cssText = 'position:fixed;opacity:0;';
+      document.body.appendChild(ta);
+      ta.focus(); ta.select();
+      try { document.execCommand('copy'); showCopied(btn); } catch(e) {}
+      document.body.removeChild(ta);
+    }
+
+    function showCopied(btn) {
+      var orig = btn.textContent;
+      btn.textContent = '✓ Copied!';
+      btn.classList.add('copied');
+      setTimeout(function() {
+        btn.textContent = orig;
+        btn.classList.remove('copied');
+      }, 2500);
+    }
+  </script>
+
+</body>
+</html>

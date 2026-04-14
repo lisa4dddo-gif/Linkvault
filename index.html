@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title data-i18n="page_title_index">LinkVault — Monetize Every Click</title>
+  <meta name="description" content="Lock your links, earn from every visit. Premium link monetization for serious publishers." />
+
+  <!-- ═══════════════════════════════════════════════
+       SEO — AUTHOR & CANONICAL
+       ═══════════════════════════════════════════════ -->
+  <meta name="author" content="MD KAWSAR" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://yourdomain.com/index.html" />
+  <!--
+    ↑ Replace "https://yourdomain.com" with your actual live domain.
+      Keep this updated if you move the project to a different host.
+  -->
+
+  <!-- ═══════════════════════════════════════════════
+       OPEN GRAPH — Facebook, WhatsApp, LinkedIn, etc.
+       ═══════════════════════════════════════════════ -->
+  <meta property="og:type"        content="website" />
+  <meta property="og:site_name"   content="LinkVault" />
+  <meta property="og:url"         content="https://yourdomain.com/index.html" />
+  <meta property="og:title"       content="LinkVault — Monetize Every Click" />
+  <meta property="og:description" content="Lock your download links, content, or any URL behind a smart ad gateway. Earn revenue on every single visitor — automatically." />
+  <meta property="og:image"       content="https://yourdomain.com/assets/img/og-cover.webp" />
+  <meta property="og:image:width"  content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt"    content="LinkVault — Premium Link Monetization Tool" />
+  <!--
+    ↑ Create a 1200×630 PNG at assets/img/og-cover.webp showing your
+      brand/logo on a dark background for best social sharing previews.
+  -->
+
+  <!-- ═══════════════════════════════════════════════
+       TWITTER / X CARDS
+       ═══════════════════════════════════════════════ -->
+  <meta name="twitter:card"        content="summary_large_image" />
+  <meta name="twitter:site"        content="@yourtwitterhandle" />
+  <meta name="twitter:creator"     content="@yourtwitterhandle" />
+  <meta name="twitter:title"       content="LinkVault — Monetize Every Click" />
+  <meta name="twitter:description" content="Lock your download links behind a smart ad gateway. Earn revenue on every visitor — automatically." />
+  <meta name="twitter:image"       content="https://yourdomain.com/assets/img/og-cover.webp" />
+  <meta name="twitter:image:alt"   content="LinkVault — Premium Link Monetization Tool" />
+  <!--
+    ↑ Replace @yourtwitterhandle with your real Twitter/X handle,
+      e.g. @mdkawsar. The same og-cover.webp is reused here.
+  -->
+
+  <!-- ═══════════════════════════════════════════════
+       PWA — WEB APP MANIFEST
+       The manifest.json lives in /web-app/ to keep the
+       project root clean. scope & start_url inside the
+       manifest file must point back to "/" accordingly.
+       ═══════════════════════════════════════════════ -->
+  <link rel="manifest" href="web-app/manifest.json" />
+  <meta name="theme-color" content="#080c14" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="LinkVault" />
+  <link rel="apple-touch-icon" href="assets/img/icon-192.webp" />
+
+  <!-- ═══════════════════════════════════════════════
+       FONTS
+       ═══════════════════════════════════════════════ -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+
+  <!-- Icons via Lucide CDN -->
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+
+  <!-- ═══════════════════════════════════════════════
+       TRANSLATION  ← load BEFORE script.js
+       To change language, swap this one file:
+         <script src="assets/js/lang.fr.js"></script>
+       See lang.js for full instructions.
+       ═══════════════════════════════════════════════ -->
+  <script src="assets/js/lang.js"></script>
+
+  <!-- Main stylesheet -->
+  <link rel="stylesheet" href="assets/css/style.css" />
+
+  <style>
+    /* ── Content Meta Fields ────────────────────────────────────── */
+    .meta-fields-toggle {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-top: 0.85rem;
+      padding: 0 0.25rem;
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: rgba(255,255,255,0.45);
+      font-family: inherit;
+      font-size: 0.78rem;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      transition: color 0.2s;
+      width: fit-content;
+    }
+    .meta-fields-toggle:hover { color: rgba(0,224,255,0.85); }
+    .meta-fields-toggle svg {
+      width: 13px; height: 13px;
+      transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+      flex-shrink: 0;
+    }
+    .meta-fields-toggle.open svg { transform: rotate(180deg); }
+    .meta-fields-toggle .toggle-line {
+      flex: 1;
+      height: 1px;
+      background: rgba(255,255,255,0.08);
+      margin-left: 0.4rem;
+    }
+    .meta-fields-panel {
+      display: grid;
+      grid-template-rows: 0fr;
+      transition: grid-template-rows 0.35s cubic-bezier(0.4,0,0.2,1);
+    }
+    .meta-fields-panel.open { grid-template-rows: 1fr; }
+    .meta-fields-inner { overflow: hidden; }
+    .meta-fields-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.65rem;
+      padding-top: 0.85rem;
+    }
+    @media (max-width: 520px) {
+      .meta-fields-grid { grid-template-columns: 1fr; }
+    }
+    .meta-field {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+    }
+    .meta-field label {
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.4);
+      padding-left: 0.25rem;
+    }
+    .meta-field .meta-input-row {
+      display: flex;
+      align-items: center;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.09);
+      border-radius: 10px;
+      padding: 0 0.75rem;
+      gap: 0.5rem;
+      transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+    }
+    .meta-field .meta-input-row:focus-within {
+      border-color: rgba(0,224,255,0.4);
+      background: rgba(0,224,255,0.04);
+      box-shadow: 0 0 0 3px rgba(0,224,255,0.07);
+    }
+    .meta-field .meta-input-row svg {
+      width: 14px; height: 14px;
+      color: rgba(255,255,255,0.3);
+      flex-shrink: 0;
+    }
+    .meta-field input {
+      background: none;
+      border: none;
+      outline: none;
+      color: rgba(255,255,255,0.85);
+      font-family: 'DM Mono', monospace;
+      font-size: 0.82rem;
+      padding: 0.6rem 0;
+      width: 100%;
+      caret-color: #00e0ff;
+    }
+    .meta-field input::placeholder { color: rgba(255,255,255,0.2); }
+    .meta-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      font-size: 0.68rem;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: rgba(0,224,255,0.6);
+      background: rgba(0,224,255,0.07);
+      border: 1px solid rgba(0,224,255,0.15);
+      border-radius: 999px;
+      padding: 0.18rem 0.55rem;
+      margin-left: 0.5rem;
+      vertical-align: middle;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ═══════════════════════════════════════════════
+       [FIX 5] NO-JS FALLBACK
+       Shown only when JavaScript is completely disabled.
+       The .noscript-warning styles live in style.css.
+       ═══════════════════════════════════════════════ -->
+  <noscript>
+    <div class="noscript-warning" role="alert">
+      <strong>⚠ JavaScript Required</strong>
+      LinkVault needs JavaScript to generate locked links.
+      Please enable JavaScript in your browser settings and reload the page.
+    </div>
+  </noscript>
+
+  <div class="bg-grid" aria-hidden="true"></div>
+  <div class="bg-glow" aria-hidden="true"></div>
+
+  <!-- ═══════════════════════════════════════════════
+       NAVIGATION
+       ═══════════════════════════════════════════════ -->
+  <nav class="navbar">
+    <div class="nav-inner container">
+      <a href="index.html" class="nav-logo">
+        <span class="logo-icon"><i data-lucide="zap"></i></span>
+        Link<span class="accent">Vault</span>
+      </a>
+      <ul class="nav-links">
+        <li><a href="#features"      data-i18n="nav_features">Features</a></li>
+        <li><a href="#how-it-works"  data-i18n="nav_how_it_works">How It Works</a></li>
+        <li><a href="#" class="btn btn-sm btn-outline" data-i18n="nav_docs">Docs</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- ═══════════════════════════════════════════════
+       HERO SECTION
+       ═══════════════════════════════════════════════ -->
+  <header class="hero" id="home">
+    <div class="container">
+
+      <div class="hero-badge reveal">
+        <i data-lucide="shield-check"></i>
+        <span data-i18n="hero_badge">Ad-Network Ready · Adsterra · PropellerAds · HilltopAds</span>
+      </div>
+
+      <!--
+        The hero title uses two separate <span> elements so that:
+        1. The <br /> line break is preserved after translation.
+        2. The gradient CSS class on line 2 is unaffected.
+        Each span gets its own data-i18n key.
+      -->
+      <h1 class="hero-title reveal reveal-delay-1">
+        <span data-i18n="hero_title_line1">Monetize Every</span><br />
+        <span class="gradient-text" data-i18n="hero_title_line2">Link You Share</span>
+      </h1>
+
+      <p class="hero-subtitle reveal reveal-delay-2" data-i18n="hero_subtitle">
+        Lock your download links, content, or any URL behind a smart ad gateway.
+        Earn revenue on every single visitor — automatically.
+      </p>
+
+      <!-- ─────────────────────────────────────────
+           MAIN URL INPUT FORM
+           ───────────────────────────────────────── -->
+      <div class="url-form-wrapper reveal reveal-delay-3">
+        <div class="url-form-card">
+
+          <label for="destination-url" class="sr-only" data-i18n="url_input_label">Destination URL</label>
+
+          <div class="input-row">
+            <span class="input-prefix"><i data-lucide="link-2"></i></span>
+            <input
+              type="url"
+              id="destination-url"
+              class="url-input"
+              placeholder="Paste your destination URL here…"
+              data-i18n-placeholder="url_input_placeholder"
+              autocomplete="off"
+              spellcheck="false"
+            />
+            <button id="lock-btn" class="btn btn-primary" type="button">
+              <span class="btn-text" data-i18n="lock_btn">Lock & Earn</span>
+              <span class="btn-icon"><i data-lucide="arrow-right"></i></span>
+            </button>
+          </div>
+
+          <!--
+            JS error strings come from lang.js keys:
+              error_empty_url / error_invalid_url / error_copy_fail
+            They are injected at runtime by script.js — no data-i18n needed here.
+          -->
+         
+          <div id="url-error" class="url-error" role="alert" aria-live="polite"></div>
+
+          <div class="shortener-option" style="margin-top: 1.2rem; display: flex; align-items: center; gap: 0.5rem;">
+            <input 
+              type="checkbox" 
+              id="shorten-checkbox" 
+              checked 
+              style="accent-color: var(--clr-accent); width: 16px; height: 16px; cursor: pointer;" 
+            />
+            <label for="shorten-checkbox" style="font-size: 0.8rem; color: var(--clr-text-muted); cursor: pointer;" data-i18n="shorten_checkbox">
+              Shorten link automatically (TinyURL)
+            </label>
+          </div>
+
+        
+
+          <!-- ── Optional File Details toggle ── -->
+          <button
+            class="meta-fields-toggle"
+            id="meta-toggle"
+            type="button"
+            aria-expanded="false"
+            aria-controls="meta-fields-panel"
+          >
+            <i data-lucide="plus-circle"></i>
+            <span data-i18n="meta_toggle_label">Add File Details</span>
+            <span class="meta-badge" data-i18n="meta_badge_optional">Optional</span>
+            <span class="toggle-line" aria-hidden="true"></span>
+            <i data-lucide="chevron-down" class="toggle-chevron"></i>
+          </button>
+
+          <div class="meta-fields-panel" id="meta-fields-panel" role="region" aria-label="File details fields">
+            <div class="meta-fields-inner">
+              <div class="meta-fields-grid">
+
+                <div class="meta-field">
+                  <label for="meta-title" data-i18n="meta_title_label">File Name / Title</label>
+                  <div class="meta-input-row">
+                    <i data-lucide="file-text"></i>
+                    <input
+                      type="text"
+                      id="meta-title"
+                      placeholder="e.g. Project_Final_v2.zip"
+                      data-i18n-placeholder="meta_title_placeholder"
+                      maxlength="120"
+                      autocomplete="off"
+                      spellcheck="false"
+                    />
+                  </div>
+                </div>
+
+                <div class="meta-field">
+                  <label for="meta-size" data-i18n="meta_size_label">File Size</label>
+                  <div class="meta-input-row">
+                    <i data-lucide="hard-drive"></i>
+                    <input
+                      type="text"
+                      id="meta-size"
+                      placeholder="e.g. 128 MB or 1.4 GB"
+                      data-i18n-placeholder="meta_size_placeholder"
+                      maxlength="40"
+                      autocomplete="off"
+                      spellcheck="false"
+                    />
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+        </div><!-- /.url-form-card -->
+
+        <!-- Generated locked link output -->
+        <div id="output-wrapper" class="output-wrapper hidden">
+          <p class="output-label">
+            <i data-lucide="check-circle"></i>
+            <span data-i18n="output_label">Your locked link is ready:</span>
+          </p>
+          <div class="output-row">
+            <span id="output-url" class="output-url"></span>
+            <button id="copy-btn" class="btn btn-sm btn-accent" type="button">
+              <i data-lucide="copy"></i>
+              <span data-i18n="copy_btn">Copy</span>
+            </button>
+          </div>
+          <a id="preview-link" href="#" target="_blank" rel="noopener" class="preview-link">
+            <i data-lucide="external-link"></i>
+            <span data-i18n="preview_link">Preview locked page</span>
+          </a>
+        </div>
+
+      </div><!-- /.url-form-wrapper -->
+
+      <!-- Stats bar -->
+      <div class="stats-bar reveal reveal-delay-4">
+        <div class="stat">
+          <span class="stat-number">10s</span>
+          <span class="stat-label" data-i18n="stat_timer_label">Ad Timer</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat">
+          <span class="stat-number">100%</span>
+          <span class="stat-label" data-i18n="stat_network_label">Ad Network Support</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat">
+          <span class="stat-number" data-i18n="stat_adblock_number">Anti</span>
+          <span class="stat-label"  data-i18n="stat_adblock_label">AdBlock Detection</span>
+        </div>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- ═══════════════════════════════════════════════
+       FEATURES SECTION
+       ═══════════════════════════════════════════════ -->
+  <section class="features-section" id="features">
+    <div class="container">
+      <div class="section-header reveal">
+        <span class="section-tag" data-i18n="features_section_tag">Why LinkVault</span>
+        <!--
+          data-i18n-html is used here (and for how_heading below) because
+          the value in lang.js contains a \n which the engine converts to <br>.
+          Using innerHTML lets the line break render correctly.
+        -->
+        <h2 data-i18n-html="features_heading">Built for Publishers<br />Who Mean Business</h2>
+      </div>
+
+      <div class="features-grid">
+
+        <div class="feature-card reveal">
+          <div class="feature-icon"><i data-lucide="timer"></i></div>
+          <h3 data-i18n="feature_timer_title">Countdown Timer</h3>
+          <p  data-i18n="feature_timer_desc">A configurable 10-second countdown maximizes ad exposure before revealing the final link.</p>
+        </div>
+
+        <div class="feature-card reveal reveal-delay-1">
+          <div class="feature-icon"><i data-lucide="shield-alert"></i></div>
+          <h3 data-i18n="feature_adblock_title">Anti-AdBlock Detection</h3>
+          <p  data-i18n="feature_adblock_desc">Detects visitors using ad blockers and prompts them to disable it — protecting your revenue.</p>
+        </div>
+
+        <div class="feature-card reveal reveal-delay-2">
+          <div class="feature-icon"><i data-lucide="layout-dashboard"></i></div>
+          <h3 data-i18n="feature_adzones_title">Flexible Ad Zones</h3>
+          <p  data-i18n="feature_adzones_desc">Pre-built banner, sticky, and interstitial zones ready for Adsterra, PropellerAds, and more.</p>
+        </div>
+
+        <div class="feature-card reveal reveal-delay-3">
+          <div class="feature-icon"><i data-lucide="code-2"></i></div>
+          <h3 data-i18n="feature_nodeps_title">Zero Dependencies</h3>
+          <p  data-i18n="feature_nodeps_desc">Pure HTML, CSS &amp; Vanilla JS. Runs anywhere — shared hosting, CDN, GitHub Pages.</p>
+        </div>
+
+        <div class="feature-card reveal">
+          <div class="feature-icon"><i data-lucide="smartphone"></i></div>
+          <h3 data-i18n="feature_mobile_title">Mobile-First Design</h3>
+          <p  data-i18n="feature_mobile_desc">Pixel-perfect on every screen. Your visitors get a seamless experience on any device.</p>
+        </div>
+
+        <div class="feature-card reveal reveal-delay-1">
+          <div class="feature-icon"><i data-lucide="settings-2"></i></div>
+          <h3 data-i18n="feature_customize_title">Easy Customization</h3>
+          <p  data-i18n="feature_customize_desc">Well-commented code with a dedicated <code>ads.js</code> config file. Set it up in minutes.</p>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════
+       HOW IT WORKS SECTION
+       ═══════════════════════════════════════════════ -->
+  <section class="how-section" id="how-it-works">
+    <div class="container">
+      <div class="section-header reveal">
+        <span class="section-tag" data-i18n="how_section_tag">The Flow</span>
+        <h2 data-i18n-html="how_heading">Three Steps to<br />Passive Revenue</h2>
+      </div>
+
+      <div class="steps-list">
+        <div class="step reveal">
+          <div class="step-number">01</div>
+          <div class="step-body">
+            <h3 data-i18n="step1_title">Paste Your URL</h3>
+            <p  data-i18n="step1_desc">Enter the destination link you want to share — a download page, article, resource, or anything else.</p>
+          </div>
+        </div>
+        <div class="step-connector" aria-hidden="true"></div>
+
+        <div class="step reveal reveal-delay-1">
+          <div class="step-number">02</div>
+          <div class="step-body">
+            <h3 data-i18n="step2_title">Share the Locked Link</h3>
+            <p  data-i18n="step2_desc">Copy the generated locked URL and share it anywhere — social media, forums, blogs, messaging apps.</p>
+          </div>
+        </div>
+        <div class="step-connector" aria-hidden="true"></div>
+
+        <div class="step reveal reveal-delay-2">
+          <div class="step-number">03</div>
+          <div class="step-body">
+            <h3 data-i18n="step3_title">Earn on Every Click</h3>
+            <p  data-i18n="step3_desc">Each visitor sees your ads during the countdown, generating impressions and revenue before they get the link.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════
+       FOOTER
+       ═══════════════════════════════════════════════ -->
+  <footer class="footer">
+    <div class="container footer-inner">
+      <a href="index.html" class="nav-logo">
+        <span class="logo-icon"><i data-lucide="zap"></i></span>
+        Link<span class="accent">Vault</span>
+      </a>
+      <p class="footer-copy" data-i18n="footer_copy">© 2025 LinkVault. Built for CodeCanyon publishers.</p>
+    </div>
+  </footer>
+
+  <!-- ═══════════════════════════════════════════════
+       SCRIPTS  (lang.js already loaded in <head>)
+       ═══════════════════════════════════════════════ -->
+        <script src="assets/js/site-config.js"></script>
+  <script src="assets/js/ads.js"></script>
+  <script src="assets/js/script.js"></script>
+  <script>
+    lucide.createIcons();
+
+    /* ── Meta Fields Toggle ── */
+    const metaToggle = document.getElementById('meta-toggle');
+    const metaPanel  = document.getElementById('meta-fields-panel');
+    metaToggle.addEventListener('click', function () {
+      const isOpen = metaPanel.classList.toggle('open');
+      metaToggle.classList.toggle('open', isOpen);
+      metaToggle.setAttribute('aria-expanded', String(isOpen));
+      lucide.createIcons();
+    });
+  </script>
+
+  <!-- ═══════════════════════════════════════════════
+       PWA — SERVICE WORKER REGISTRATION
+       The SW file lives in /web-app/sw.js.
+       IMPORTANT: Because the SW is in a sub-folder, its
+       "scope" is limited to /web-app/ by default. We
+       override this with the Service-Worker-Allowed header
+       trick via the `scope` option below, which requires
+       your server to send:
+         Service-Worker-Allowed: /
+       on the sw.js response. Most hosts (Apache, Nginx,
+       Netlify, Vercel) can be configured to do this easily.
+       See web-app/sw.js for full setup instructions.
+       ═══════════════════════════════════════════════ -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function () {
+        navigator.serviceWorker
+          .register('/web-app/sw.js', { scope: '/' })
+          .then(function (reg) {
+            console.log('[LinkVault SW] Registered. Scope:', reg.scope);
+          })
+          .catch(function (err) {
+            console.warn('[LinkVault SW] Registration failed:', err);
+          });
+      });
+    }
+  </script>
+
+</body>
+</html>

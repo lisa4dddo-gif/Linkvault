@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title data-i18n="page_title_locked">Please Wait — LinkVault</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <!--
+    ↑ noindex is intentional — locked pages are dynamic/unique per link
+      and should not be indexed by search engines.
+  -->
+
+  <!-- ═══════════════════════════════════════════════
+       SEO — AUTHOR
+       ═══════════════════════════════════════════════ -->
+  <meta name="author" content="MD KAWSAR" />
+
+  <!-- ═══════════════════════════════════════════════
+       OPEN GRAPH — Facebook, WhatsApp, LinkedIn, etc.
+       These tags give the locked page a branded preview
+       when someone shares the locked link URL directly.
+       ═══════════════════════════════════════════════ -->
+  <meta property="og:type"        content="website" />
+  <meta property="og:site_name"   content="LinkVault" />
+  <meta property="og:url"         content="https://yourdomain.com/locked.html" />
+  <meta property="og:title"       content="You've Been Sent a Protected Link — LinkVault" />
+  <meta property="og:description" content="This link is protected by LinkVault. Watch a short ad to unlock your destination." />
+  <meta property="og:image"       content="https://yourdomain.com/assets/img/og-locked.webp" />
+  <meta property="og:image:width"  content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt"    content="LinkVault — Protected Link Gateway" />
+  <!--
+    ↑ Create a second OG image at assets/img/og-locked.webp — ideally
+      a 1200×630 PNG with a padlock graphic and "Your link is protected"
+      text. This makes shares of locked-page URLs look professional.
+  -->
+
+  <!-- ═══════════════════════════════════════════════
+       TWITTER / X CARDS
+       ═══════════════════════════════════════════════ -->
+  <meta name="twitter:card"        content="summary_large_image" />
+  <meta name="twitter:site"        content="@yourtwitterhandle" />
+  <meta name="twitter:creator"     content="@yourtwitterhandle" />
+  <meta name="twitter:title"       content="You've Been Sent a Protected Link — LinkVault" />
+  <meta name="twitter:description" content="This link is protected by LinkVault. Watch a short ad to unlock your destination." />
+  <meta name="twitter:image"       content="https://yourdomain.com/assets/img/og-locked.webp" />
+  <meta name="twitter:image:alt"   content="LinkVault — Protected Link Gateway" />
+
+  <!-- ═══════════════════════════════════════════════
+       PWA — WEB APP MANIFEST & THEME
+       ═══════════════════════════════════════════════ -->
+  <link rel="manifest" href="web-app/manifest.json" />
+  <meta name="theme-color" content="#080c14" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="LinkVault" />
+  <link rel="apple-touch-icon" href="assets/img/icon-192.webp" />
+
+  <!-- ═══════════════════════════════════════════════
+       FONTS
+       ═══════════════════════════════════════════════ -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+
+  <!-- Icons -->
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+
+  <!-- ═══════════════════════════════════════════════
+       TRANSLATION  ← load BEFORE script.js
+       To change language, swap this one file.
+       ═══════════════════════════════════════════════ -->
+  <script src="assets/js/lang.js"></script>
+
+  <!-- Main stylesheet -->
+  <link rel="stylesheet" href="assets/css/style.css" />
+
+  <style>
+    /* ══════════════════════════════════════════════════════════════
+       FILE DETAILS CARD
+       ══════════════════════════════════════════════════════════════ */
+    @keyframes fd-enter {
+      0%   { opacity: 0; transform: translateY(12px) scale(0.98); }
+      100% { opacity: 1; transform: translateY(0)    scale(1);    }
+    }
+    .file-details-card {
+      position: relative;
+      background: linear-gradient(135deg, rgba(0,224,255,0.06) 0%, rgba(0,120,255,0.04) 100%);
+      border: 1px solid rgba(0,224,255,0.18);
+      border-radius: 18px;
+      padding: 1.1rem 1.4rem 1.15rem;
+      margin-bottom: 1.5rem;
+      overflow: hidden;
+      animation: fd-enter 0.5s cubic-bezier(0.34,1.56,0.64,1) both;
+    }
+    .file-details-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      background: linear-gradient(180deg, rgba(0,224,255,0.10) 0%, transparent 40%);
+      pointer-events: none;
+    }
+    .file-details-card::after {
+      content: '';
+      position: absolute;
+      top: 14px; right: 14px;
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: #00e0ff;
+      box-shadow: 0 0 8px 2px rgba(0,224,255,0.5);
+      animation: fd-pulse 2.4s ease-in-out infinite;
+    }
+    @keyframes fd-pulse {
+      0%, 100% { opacity: 1;   transform: scale(1);   }
+      50%       { opacity: 0.4; transform: scale(0.7); }
+    }
+    .file-details-header {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.9rem;
+    }
+    .file-details-header svg { width: 14px; height: 14px; color: rgba(0,224,255,0.6); flex-shrink: 0; }
+    .file-details-header span {
+      font-size: 0.7rem; font-weight: 700; letter-spacing: 0.1em;
+      text-transform: uppercase; color: rgba(0,224,255,0.55);
+    }
+    .file-details-header::after {
+      content: ''; flex: 1; height: 1px;
+      background: linear-gradient(90deg, rgba(0,224,255,0.2) 0%, transparent 100%);
+    }
+    .file-details-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.65rem;
+    }
+    @media (max-width: 440px) { .file-details-grid { grid-template-columns: 1fr; } }
+    .file-detail-item {
+      display: flex; flex-direction: column; gap: 0.22rem;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 10px;
+      padding: 0.65rem 0.85rem;
+      min-width: 0;
+    }
+    .file-detail-item:only-child { grid-column: 1 / -1; }
+    .file-detail-label {
+      display: flex; align-items: center; gap: 0.35rem;
+      font-size: 0.67rem; font-weight: 700; letter-spacing: 0.08em;
+      text-transform: uppercase; color: rgba(255,255,255,0.3);
+    }
+    .file-detail-label svg { width: 11px; height: 11px; flex-shrink: 0; color: rgba(0,224,255,0.4); }
+    .file-detail-value {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.88rem; font-weight: 500;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      background: linear-gradient(90deg, rgba(255,255,255,0.9) 0%, rgba(180,230,255,0.9) 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    .file-detail-item--size .file-detail-value {
+      background: linear-gradient(90deg, #00e0ff 0%, #0078ff 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+      font-weight: 700;
+    }
+  </style>
+</head>
+<body class="locked-page">
+
+  <!-- ═══════════════════════════════════════════════
+       [FIX 5] NO-JS FALLBACK
+       Shown only when JavaScript is completely disabled.
+       Without JS the countdown and link reveal cannot run,
+       so we surface a clear, actionable message.
+       ═══════════════════════════════════════════════ -->
+  <noscript>
+    <div class="noscript-warning" role="alert">
+      <strong>⚠ JavaScript Required</strong>
+      This page uses JavaScript to run the countdown timer and reveal your link.
+      Please enable JavaScript in your browser settings and reload the page.
+    </div>
+  </noscript>
+
+  <div class="bg-grid" aria-hidden="true"></div>
+  <div class="bg-glow bg-glow--amber" aria-hidden="true"></div>
+
+  <!-- ═══════════════════════════════════════════════
+       AD ZONE: HEADER BANNER
+       min-height reserves the 728×90 leaderboard slot
+       before the ad network script loads, preventing CLS.
+       ═══════════════════════════════════════════════ -->
+  <div id="ad-header-placeholder" class="ad-zone ad-zone--header" aria-label="Advertisement" style="min-height:110px;contain:layout size;"  >
+    <div class="ad-zone-inner">
+      <!-- ▼▼▼ PASTE YOUR HEADER AD CODE HERE ▼▼▼ -->
+      <span class="ad-zone-label">Advertisement</span>
+      <div class="ad-demo-box">
+        Header Banner Ad · 728×90<br />
+        <small>Replace this div content with your ad network code</small>
+      </div>
+      <!-- ▲▲▲ END HEADER AD CODE ▲▲▲ -->
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════
+       ANTI-ADBLOCK OVERLAY
+       ═══════════════════════════════════════════════ -->
+  <div id="adblock-overlay" class="adblock-overlay hidden" role="dialog" aria-modal="true" aria-label="AdBlock Detected">
+    <div class="adblock-modal">
+      <div class="adblock-icon"><i data-lucide="shield-off"></i></div>
+      <h2 data-i18n="adblock_title">AdBlock Detected</h2>
+      <p data-i18n="adblock_body">
+        This site is supported by advertising. Please disable your
+        ad blocker or whitelist this site to continue and access your link.
+      </p>
+      <button id="adblock-dismiss" class="btn btn-primary">
+        <i data-lucide="check"></i>
+        <span data-i18n="adblock_dismiss_btn">I've Disabled My AdBlocker</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════
+       MAIN LOCKED CONTENT
+       ═══════════════════════════════════════════════ -->
+  <main class="locked-main">
+    <div class="container">
+      <div class="locked-card">
+
+        <!-- Branding — "LinkVault" brand name is NOT translated -->
+        <a href="index.html" class="locked-logo">
+          <i data-lucide="zap"></i>
+          Link<span class="accent">Vault</span>
+        </a>
+
+        <!-- Security badge -->
+        <div class="locked-badge">
+          <i data-lucide="lock"></i>
+          <span data-i18n="locked_badge">This link is protected</span>
+        </div>
+
+        <!-- ─────────────────────────────────────────
+             FILE DETAILS CARD
+             Hidden by default; revealed by script.js
+             when ?title= or ?size= params are present.
+             ───────────────────────────────────────── -->
+        <div id="file-details-card" class="file-details-card hidden">
+
+          <div class="file-details-header">
+            <i data-lucide="package"></i>
+            <span data-i18n="fd_card_heading">File Details</span>
+          </div>
+
+          <div class="file-details-grid">
+
+            <div id="fd-title-item" class="file-detail-item hidden">
+              <span class="file-detail-label">
+                <i data-lucide="file-text"></i>
+                <span data-i18n="fd_label_name">File Name</span>
+              </span>
+              <span id="fd-title-value" class="file-detail-value" title=""></span>
+            </div>
+
+            <div id="fd-size-item" class="file-detail-item file-detail-item--size hidden">
+              <span class="file-detail-label">
+                <i data-lucide="hard-drive"></i>
+                <span data-i18n="fd_label_size">File Size</span>
+              </span>
+              <span id="fd-size-value" class="file-detail-value"></span>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- ─────────────────────────────────────────
+             COUNTDOWN TIMER UI
+             ───────────────────────────────────────── -->
+        <div id="countdown-section" class="countdown-section">
+          <div class="countdown-ring-wrapper" role="timer" aria-label="Countdown timer">
+            <svg class="countdown-ring" viewBox="0 0 120 120" aria-hidden="true">
+              <circle class="ring-track"    cx="60" cy="60" r="52" />
+              <circle id="ring-progress" class="ring-progress" cx="60" cy="60" r="52" />
+            </svg>
+            <div class="countdown-number-wrapper">
+              <span id="countdown-number" class="countdown-number">10</span>
+              <!--
+                countdown_unit is also set programmatically in script.js
+                (so it stays correct even if the section is re-shown).
+                The data-i18n attribute handles the initial render.
+              -->
+              <span class="countdown-unit" data-i18n="countdown_unit">sec</span>
+            </div>
+          </div>
+
+          <p class="countdown-message">
+            <i data-lucide="hourglass"></i>
+            <span data-i18n="countdown_message">Please wait while your link is being prepared…</span>
+          </p>
+        </div>
+
+        <!-- ─────────────────────────────────────────
+             GET LINK SECTION  (hidden until timer ends)
+             ───────────────────────────────────────── -->
+        <div id="get-link-section" class="get-link-section hidden">
+          <div class="success-icon"><i data-lucide="circle-check-big"></i></div>
+          <h2 class="get-link-title"    data-i18n="get_link_title">Your Link is Ready!</h2>
+          <p  class="get-link-subtitle" data-i18n="get_link_subtitle">Click the button below to access your destination.</p>
+          <a id="get-link-btn" href="#" class="btn btn-primary btn-large btn-pulse">
+            <i data-lucide="external-link"></i>
+            <span data-i18n="get_link_btn">Get My Link</span>
+          </a>
+          <p class="get-link-note">
+            <i data-lucide="info"></i>
+            <span data-i18n="get_link_note">You will be redirected in a new tab.</span>
+          </p>
+        </div>
+
+        <!-- Error state -->
+        <div id="error-section" class="error-section hidden">
+          <div class="error-icon"><i data-lucide="link-2-off"></i></div>
+          <h2 data-i18n="error_title">Invalid or Missing Link</h2>
+          <p  data-i18n="error_desc">This page requires a valid destination URL parameter.</p>
+          <a href="index.html" class="btn btn-outline btn-large">
+            <i data-lucide="arrow-left"></i>
+            <span data-i18n="error_back_btn">Go Back Home</span>
+          </a>
+        </div>
+
+      </div><!-- /.locked-card -->
+
+      <!-- AD ZONE: MAIN CONTENT SQUARE
+           min-height reserves the 300×250 medium-rectangle
+           slot before the ad network script loads. -->
+      <div id="ad-content-placeholder" class="ad-zone ad-zone--content" aria-label="Advertisement" style="min-height:280px;contain:layout size;">
+        <div class="ad-zone-inner">
+          <!-- ▼▼▼ PASTE YOUR CONTENT AD CODE HERE ▼▼▼ -->
+          <span class="ad-zone-label">Advertisement</span>
+          <div class="ad-demo-box">
+            Content Ad · 300×250<br />
+            <small>Replace this div content with your ad network code</small>
+          </div>
+          <!-- ▲▲▲ END CONTENT AD CODE ▲▲▲ -->
+        </div>
+      </div>
+
+    </div><!-- /.container -->
+  </main>
+
+  <!-- AD ZONE: STICKY FOOTER BANNER
+       min-height reserves the sticky footer slot height. -->
+  <div id="ad-sticky-placeholder" class="ad-zone ad-zone--sticky" aria-label="Advertisement" style="min-height:70px;contain:layout size;">
+    <div class="ad-zone-inner">
+      <button class="ad-sticky-close" id="sticky-close" aria-label="Close ad">
+        <i data-lucide="x"></i>
+      </button>
+      <!-- ▼▼▼ PASTE YOUR STICKY FOOTER AD CODE HERE ▼▼▼ -->
+      <span class="ad-zone-label">Advertisement</span>
+      <div class="ad-demo-box ad-demo-box--slim">
+        Sticky Footer Ad · 728×90 · <small>Replace with your ad code</small>
+      </div>
+      <!-- ▲▲▲ END STICKY FOOTER AD CODE ▲▲▲ -->
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════
+       SCRIPTS  (lang.js already loaded in <head>)
+       ═══════════════════════════════════════════════ -->
+  <!-- ▼▼▼ PASTE YOUR POP-UNDER / DIRECT LINK SCRIPT HERE ▼▼▼ -->
+  <!-- ▲▲▲ END POP-UNDER SCRIPT ▲▲▲ -->
+
+  <script src="assets/js/ads.js"></script>
+  <script src="assets/js/script.js"></script>
+  <script>
+    lucide.createIcons();
+  </script>
+
+  <!-- ═══════════════════════════════════════════════
+       PWA — SERVICE WORKER REGISTRATION
+       ═══════════════════════════════════════════════ -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function () {
+        navigator.serviceWorker
+          .register('/web-app/sw.js', { scope: '/' })
+          .then(function (reg) {
+            console.log('[LinkVault SW] Registered. Scope:', reg.scope);
+          })
+          .catch(function (err) {
+            console.warn('[LinkVault SW] Registration failed:', err);
+          });
+      });
+    }
+  </script>
+
+</body>
+</html>

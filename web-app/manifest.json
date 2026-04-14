@@ -1,0 +1,92 @@
+{
+  "_comment": [
+    "LinkVault — Web App Manifest",
+    "Author : MD KAWSAR",
+    "Path   : /web-app/manifest.json",
+    "",
+    "SETUP CHECKLIST:",
+    "  1. Replace all 'https://yourdomain.com' with your real domain.",
+    "  2. Create the icon files listed below under assets/img/:",
+    "       icon-192.webp  — 192×192 px  (standard Android home-screen icon)",
+    "       icon-512.webp  — 512×512 px  (splash screen / Play Store quality)",
+    "       icon-maskable-512.webp — 512×512 px with a safe-zone (maskable)",
+    "     Use a tool like https://maskable.app to preview maskable icons.",
+    "  3. Make sure your server sends this header for /web-app/sw.js:",
+    "       Service-Worker-Allowed: /",
+    "     Apache  → add to .htaccess (see sw.js for the snippet)",
+    "     Nginx   → add to server block (see sw.js for the snippet)",
+    "     Netlify → add to netlify.toml (see sw.js for the snippet)",
+    "     Vercel  → add to vercel.json  (see sw.js for the snippet)"
+  ],
+
+  "name":             "LinkVault",
+  "short_name":       "LinkVault",
+  "description":      "Lock your links, earn from every visit. Premium link monetization for serious publishers.",
+  "lang":             "en",
+  "dir":              "ltr",
+
+  "start_url":        "/index.html?source=pwa",
+  "scope":            "/",
+  "display":          "standalone",
+  "orientation":      "portrait-primary",
+
+  "background_color": "#080c14",
+  "theme_color":      "#080c14",
+
+  "categories":       ["productivity", "utilities", "finance"],
+
+  "icons": [
+    {
+      "src":     "/assets/img/icon-192.webp",
+      "sizes":   "192x192",
+      "type":    "image/webp",
+      "purpose": "any"
+    },
+    {
+      "src":     "/assets/img/icon-512.webp",
+      "sizes":   "512x512",
+      "type":    "image/webp",
+      "purpose": "any"
+    },
+    {
+      "src":     "/assets/img/icon-maskable-512.webp",
+      "sizes":   "512x512",
+      "type":    "image/webp",
+      "purpose": "maskable"
+    }
+  ],
+
+  "screenshots": [
+    {
+      "src":          "/assets/img/screenshot-desktop.webp",
+      "sizes":        "1280x800",
+      "type":         "image/webp",
+      "form_factor":  "wide",
+      "label":        "LinkVault home page — desktop view"
+    },
+    {
+      "src":          "/assets/img/screenshot-mobile.webp",
+      "sizes":        "390x844",
+      "type":         "image/webp",
+      "form_factor":  "narrow",
+      "label":        "LinkVault home page — mobile view"
+    }
+  ],
+
+  "shortcuts": [
+    {
+      "name":       "Lock a New Link",
+      "short_name": "Lock Link",
+      "description": "Go directly to the URL input to lock a new link",
+      "url":        "/index.html#home",
+      "icons": [
+        {
+          "src":   "/assets/img/icon-192.webp",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ],
+
+  "prefer_related_applications": false
+}
