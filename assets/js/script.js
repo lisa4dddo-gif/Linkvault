@@ -351,8 +351,8 @@ if (IS_INDEX_PAGE) {
       lockBtn.disabled = true; // Prevent spam clicks
       
       try {
-        /* Call TinyURL Public API to shorten the long locked URL */
-        const apiResponse = await fetch('https://tinyurl.com/api-create.php?url=' + encodeURIComponent(lockedUrl));
+      /* Call is.gd Public API to shorten the long locked URL */
+const apiResponse = await fetch('https://is.gd/create.php?format=simple&url=' + encodeURIComponent(lockedUrl));
         
         if (apiResponse.ok) {
           finalUrl = await apiResponse.text();
