@@ -16,11 +16,16 @@
      • Reads and validates the destination URL from query params
      • Reads optional ?title= and ?size= params and renders the
        "File Details" card above the countdown if present
+     • Shows a "Start Destination Timer" button; countdown only
+       begins AFTER the user clicks it
      • Runs the countdown timer with SVG ring animation
      • Pauses/resumes the timer via the Page Visibility API
      • Shows toast messages on pause and resume
      • Reveals the "Get Link" button when the timer reaches 0
-     • Detects ad blockers and shows an overlay if one is found
+     • Detects ad blockers and applies a "soft penalty":
+         – Doubles the countdown timer
+         – Shows a persistent amber warning toast
+         – Does NOT hard-block the user
      • Closes the sticky ad zone when the user clicks the X button
 
    CONFIGURATION:
@@ -28,21 +33,18 @@
      • All UI text strings  → assets/js/lang.js  (load BEFORE this file)
      • Timer duration       → CONFIG.COUNTDOWN_SECONDS below
 
-   CHANGELOG (fixes applied):
+   CHANGELOG:
      [FIX 1] URL Security: dest param now uses reversed-Base64
              encoding (btoa + string reversal) instead of plain
-             encodeURIComponent. Decoder on locked.html uses the
-             matching atob + reversal. Obfuscates URLs from casual
-             inspection without breaking any browser.
-     [FIX 2] Auto HTTPS: If the user types a URL without a scheme
-             (e.g. "google.com"), https:// is automatically prepended
-             before validation and encoding.
-     [FIX 3] AdBlocker Dismiss: Clicking "I've Disabled My AdBlocker"
-             now calls window.location.reload() instead of just hiding
-             the modal, so the adblock bait test is re-run.
-     [FIX 4] Toast Spam: showToast() now removes any existing toast
-             from the DOM instantly before injecting a new one,
-             preventing stacked/overlapping toasts.
+             encodeURIComponent.
+     [FIX 2] Auto HTTPS: If the user types a URL without a scheme,
+             https:// is automatically prepended.
+     [FIX 3] AdBlocker: Now a "soft penalty" — doubles the timer
+             and shows a warning toast instead of a hard block.
+     [FIX 4] Toast Spam: showToast() removes any existing toast
+             before injecting a new one.
+     [NEW 1] Start Timer Button: countdown is user-initiated, not
+             automatic. A pulsing button appears inside the ring area.
    ================================================================ */
 
 'use strict';
@@ -102,7 +104,6 @@ function applyTranslations() {
     var el  = textEls[i];
     var key = el.getAttribute('data-i18n');
     if (key && lang[key] !== undefined) {
-      // <title> is a special case: it has no child nodes to worry about
       if (el.tagName === 'TITLE') {
         document.title = lang[key];
       } else {
@@ -117,7 +118,6 @@ function applyTranslations() {
     var hEl  = htmlEls[j];
     var hKey = hEl.getAttribute('data-i18n-html');
     if (hKey && lang[hKey] !== undefined) {
-      // Convert literal \n in the lang value to <br> tags
       hEl.innerHTML = lang[hKey].replace(/\\n/g, '<br />');
     }
   }
@@ -149,35 +149,17 @@ applyTranslations();
    ─────────────────────────────────────────────────────────────────
    encodeDestUrl(str)  : reverse the string, then base64-encode it.
    decodeDestUrl(str)  : base64-decode it, then reverse it back.
-
-   Why reversed Base64?
-   • Pure btoa(url) is trivially readable (just atob() it).
-   • Reversing the string before encoding means a casual inspection
-     of the URL parameter produces meaningless output even after a
-     single atob() call, deterring URL-bypass attempts.
-   • This is obfuscation, not encryption — it keeps the codebase
-     dependency-free while raising the bar beyond plain encoding.
-
-   Unicode safety: btoa() only handles Latin-1. We use
-   encodeURIComponent + unescape trick to safely encode any Unicode
-   character (emoji, non-ASCII) before base64.
    ================================================================ */
 function encodeDestUrl(str) {
-  // Step 1: percent-encode any non-ASCII characters so btoa() is safe
   var utf8Safe = unescape(encodeURIComponent(str));
-  // Step 2: reverse the string
   var reversed = utf8Safe.split('').reverse().join('');
-  // Step 3: base64-encode the reversed string
   return btoa(reversed);
 }
 
 function decodeDestUrl(encoded) {
   try {
-    // Step 1: base64-decode
     var reversed = atob(encoded);
-    // Step 2: reverse back to get the utf8-safe string
     var utf8Safe = reversed.split('').reverse().join('');
-    // Step 3: decode percent-encoding to recover original Unicode
     return decodeURIComponent(escape(utf8Safe));
   } catch (_) {
     return null;
@@ -190,11 +172,10 @@ function decodeDestUrl(encoded) {
    ─────────────────────────────────────────────────────────────────
    Self-contained; injects its own <style> tag.
    Call: showToast(message, type, duration)
-   Types: 'pause' | 'resume' | 'info'
+   Types: 'pause' | 'resume' | 'info' | 'warning'
 
    [FIX 4] Toast Spam: Before inserting a new toast, all existing
-   toasts inside the container are removed from the DOM immediately
-   (no wait for their exit animation) so they never stack/overlap.
+   toasts inside the container are removed from the DOM immediately.
    ================================================================ */
 (function initToastStyles() {
   var style = document.createElement('style');
@@ -215,11 +196,12 @@ function decodeDestUrl(encoded) {
       'animation:lv-toast-in 0.35s cubic-bezier(0.34,1.56,0.64,1) forwards;',
       'white-space:nowrap;',
     '}',
-    '.lv-toast--pause {background:linear-gradient(135deg,rgba(255,160,0,0.92),rgba(230,81,0,0.92));}',
-    '.lv-toast--resume{background:linear-gradient(135deg,rgba(0,200,200,0.92),rgba(0,120,255,0.92));}',
-    '.lv-toast--info  {background:linear-gradient(135deg,rgba(120,80,255,0.92),rgba(180,60,220,0.92));}',
-    '.lv-toast__icon  {font-size:1rem;line-height:1;flex-shrink:0;}',
-    '.lv-toast--out   {animation:lv-toast-out 0.3s ease forwards;}',
+    '.lv-toast--pause   {background:linear-gradient(135deg,rgba(255,160,0,0.92),rgba(230,81,0,0.92));}',
+    '.lv-toast--resume  {background:linear-gradient(135deg,rgba(0,200,200,0.92),rgba(0,120,255,0.92));}',
+    '.lv-toast--info    {background:linear-gradient(135deg,rgba(120,80,255,0.92),rgba(180,60,220,0.92));}',
+    '.lv-toast--warning {background:linear-gradient(135deg,rgba(245,166,35,0.95),rgba(230,81,0,0.95));}',
+    '.lv-toast__icon    {font-size:1rem;line-height:1;flex-shrink:0;}',
+    '.lv-toast--out     {animation:lv-toast-out 0.3s ease forwards;}',
     '@keyframes lv-toast-in  {0%{opacity:0;transform:translateY(-14px) scale(0.92)}100%{opacity:1;transform:translateY(0) scale(1)}}',
     '@keyframes lv-toast-out {0%{opacity:1;transform:translateY(0) scale(1)}100%{opacity:0;transform:translateY(-10px) scale(0.94)}}',
   ].join('');
@@ -236,25 +218,28 @@ function showToast(message, type, duration) {
   }
 
   /* ── [FIX 4] Remove any existing toasts instantly ── */
-  // Querying all current toasts and removing them prevents the
-  // "paused / resumed" messages from piling up when the user
-  // rapidly switches tabs back and forth.
   var existingToasts = container.querySelectorAll('.lv-toast');
   for (var i = 0; i < existingToasts.length; i++) {
     existingToasts[i].remove();
   }
 
-  var icons = { pause: '⏸', resume: '▶', info: 'ℹ' };
+  var icons = { pause: '⏸', resume: '▶', info: 'ℹ', warning: '⚠' };
   var toast = document.createElement('div');
   toast.className = 'lv-toast lv-toast--' + (type || 'info');
   toast.innerHTML =
     '<span class="lv-toast__icon">' + (icons[type] || icons.info) + '</span>' +
     '<span>' + message + '</span>';
   container.appendChild(toast);
-  setTimeout(function () {
-    toast.classList.add('lv-toast--out');
-    toast.addEventListener('animationend', function () { toast.remove(); }, { once: true });
-  }, duration);
+
+  // duration of 0 or negative means "persistent until manually removed"
+  if (duration > 0) {
+    setTimeout(function () {
+      toast.classList.add('lv-toast--out');
+      toast.addEventListener('animationend', function () { toast.remove(); }, { once: true });
+    }, duration);
+  }
+
+  return toast; // Return ref so caller can remove it early if needed
 }
 
 
@@ -284,17 +269,11 @@ if (IS_INDEX_PAGE) {
   function showError(message) { urlError.textContent = message; }
   function clearError()       { urlError.textContent = ''; }
 
-  /* ── [FIX 1 + FIX 2] buildLockedUrl: Auto-HTTPS + Reversed Base64 ──
-     Replace the old:
-       encodeURIComponent(destinationUrl)
-     with our new encodeDestUrl() helper that reverses then base64-encodes.
-  ── */
   function buildLockedUrl(destinationUrl, title, size) {
     var base = CONFIG.BASE_URL ||
       window.location.origin +
       window.location.pathname.replace('index.html', '');
 
-    // [FIX 1] Use reversed-Base64 encoding instead of encodeURIComponent
     var encodedDest = encodeDestUrl(destinationUrl);
 
     var url = base + 'locked.html?' + CONFIG.URL_PARAM + '=' + encodedDest;
@@ -303,12 +282,6 @@ if (IS_INDEX_PAGE) {
     return url;
   }
 
-/* ================================================================
-     MAIN URL GENERATOR & SHORTENER LOGIC
-     ================================================================ */
-  /* ================================================================
-     MAIN URL GENERATOR & SHORTENER LOGIC
-     ================================================================ */
   async function handleLockUrl() {
     clearError();
     var rawUrl = urlInput.value.trim();
@@ -319,10 +292,9 @@ if (IS_INDEX_PAGE) {
       return;
     }
 
-    /* Auto-prepend https:// if no scheme is present */
     if (!/^https?:\/\//i.test(rawUrl)) {
       rawUrl = 'https://' + rawUrl;
-      urlInput.value = rawUrl; 
+      urlInput.value = rawUrl;
     }
 
     if (!isValidUrl(rawUrl)) {
@@ -331,38 +303,30 @@ if (IS_INDEX_PAGE) {
       return;
     }
 
-    /* Prevent multiple rapid clicks while processing */
     if (lockBtn.disabled) return;
 
-    /* Fetch optional meta details */
     var title = metaTitleInput ? metaTitleInput.value : '';
     var size  = metaSizeInput  ? metaSizeInput.value  : '';
-    
-    /* Generate the long encrypted URL */
-    var lockedUrl = buildLockedUrl(rawUrl, title, size);
-    var finalUrl  = lockedUrl; // Default to long URL
 
-    /* Reveal the output wrapper immediately for UX feedback */
+    var lockedUrl = buildLockedUrl(rawUrl, title, size);
+    var finalUrl  = lockedUrl;
+
     var shortenCheckbox = document.getElementById('shorten-checkbox');
     outputWrapper.classList.remove('hidden');
     outputWrapper.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 
-    /* Check if user wants to shorten the link */
     if (shortenCheckbox && shortenCheckbox.checked) {
-      
-      /* Show temporary loading text and disable button */
+
       outputUrl.textContent = t('generating_text', 'Generating short link...');
       outputUrl.style.opacity = '0.6';
-      
-      // Strict UI lockdown during API call
+
       lockBtn.disabled = true;
       lockBtn.style.opacity = '0.7';
       lockBtn.style.cursor = 'not-allowed';
-      
+
       try {
         const encodedLockedUrl = encodeURIComponent(lockedUrl);
-        
-        /* Target APIs: is.gd, v.gd, and tinyurl (all provide clean, direct redirects) */
+
         const apis = [
           'https://is.gd/create.php?format=simple&url=' + encodedLockedUrl,
           'https://v.gd/create.php?format=simple&url=' + encodedLockedUrl,
@@ -371,44 +335,36 @@ if (IS_INDEX_PAGE) {
 
         let shortUrlSuccess = false;
 
-        /* Custom Fetch with Timeout to prevent infinite hanging on free APIs */
         const fetchWithTimeout = async (resource, options = {}) => {
-          const { timeout = 5000 } = options; 
+          const { timeout = 5000 } = options;
           const controller = new AbortController();
           const id = setTimeout(() => controller.abort(), timeout);
           const response = await fetch(resource, {
             ...options,
-            signal: controller.signal  
+            signal: controller.signal
           });
           clearTimeout(id);
           return response;
         };
 
-        /* Iterate through the APIs sequentially as a strict fallback mechanism */
         for (let api of apis) {
           try {
-            // [FIXED] Use corsproxy.io instead of allorigins to bypass blocks
             const proxyUrl = 'https://corsproxy.io/?' + encodeURIComponent(api);
-            
-            // [FIXED] Increased timeout to 8 seconds (8000ms)
             const apiResponse = await fetchWithTimeout(proxyUrl, { timeout: 8000 });
-            
+
             if (apiResponse.ok) {
               const responseText = await apiResponse.text();
-              
-              // Ensure the response is actually a valid URL (not a proxy error page)
               if (responseText.startsWith('http')) {
                 finalUrl = responseText.trim();
                 shortUrlSuccess = true;
-                break; // Exit the loop on first successful generation
+                break;
               }
             }
           } catch (e) {
-            console.warn(`[LinkVault] API failed or timed out, trying next fallback...`, e.message);
+            console.warn('[LinkVault] API failed or timed out, trying next fallback...', e.message);
           }
         }
 
-        /* Handle complete failure gracefully */
         if (!shortUrlSuccess) {
           console.warn('[LinkVault] All URL Shortener APIs failed. Falling back to long URL.');
           if (typeof showToast === 'function') {
@@ -419,7 +375,6 @@ if (IS_INDEX_PAGE) {
       } catch (error) {
         console.error('[LinkVault] Critical error during URL shortening:', error);
       } finally {
-        /* Restore UI state regardless of success or failure */
         outputUrl.style.opacity = '1';
         lockBtn.disabled = false;
         lockBtn.style.opacity = '1';
@@ -427,13 +382,9 @@ if (IS_INDEX_PAGE) {
       }
     }
 
-    /* Display the final URL (shortened or long) */
     outputUrl.textContent = finalUrl;
     previewLink.href      = finalUrl;
   }
-
-
-
 
   lockBtn.addEventListener('click', handleLockUrl);
   urlInput.addEventListener('keydown', function (e) { if (e.key === 'Enter') handleLockUrl(); });
@@ -453,7 +404,6 @@ if (IS_INDEX_PAGE) {
   });
 
   function showCopiedState() {
-    // Preserve the icon; only update the text span
     var originalText = t('copy_btn', 'Copy');
     var copiedText   = t('copy_btn_copied', 'Copied!');
     if (copyBtnText) {
@@ -505,20 +455,16 @@ if (IS_LOCKED_PAGE) {
   var fdTitleValue     = document.getElementById('fd-title-value');
   var fdSizeItem       = document.getElementById('fd-size-item');
   var fdSizeValue      = document.getElementById('fd-size-value');
+  var startTimerBtn    = document.getElementById('start-timer-btn');
 
   var RING_CIRCUMFERENCE = 2 * Math.PI * 52;
 
-  /* ── [FIX 1] Read & validate destination URL using reversed-Base64 ──
-     Replace the old:
-       var decoded = decodeURIComponent(encoded);
-     with our new decodeDestUrl() helper that reverses+base64-decodes.
-  ── */
+  /* ── [FIX 1] Read & validate destination URL using reversed-Base64 ── */
   function getDestinationUrl() {
     var params  = new URLSearchParams(window.location.search);
     var encoded = params.get(CONFIG.URL_PARAM);
     if (!encoded) return null;
     try {
-      // [FIX 1] Use reversed-Base64 decoding instead of decodeURIComponent
       var decoded = decodeDestUrl(encoded);
       if (!decoded) return null;
       var url = new URL(decoded);
@@ -574,19 +520,58 @@ if (IS_LOCKED_PAGE) {
   }
 
   /* ================================================================
+     [NEW 1] SHOW THE START TIMER BUTTON
+     ─────────────────────────────────────────────────────────────────
+     Instead of auto-starting the countdown, we render a pulsing
+     "Start Destination Timer" button inside the ring number wrapper.
+     The countdown only begins when the user clicks it.
+     ================================================================ */
+  function showStartButton(onStart) {
+    if (!startTimerBtn) return;
+
+    // Set initial ring state: full arc, no countdown running
+    if (ringProgress) {
+      ringProgress.style.strokeDasharray  = RING_CIRCUMFERENCE;
+      ringProgress.style.strokeDashoffset = RING_CIRCUMFERENCE; // empty ring
+    }
+
+    // Hide the number/unit, show the start button
+    var numberWrapper = document.querySelector('.countdown-number-wrapper');
+    if (numberWrapper) numberWrapper.classList.add('hidden');
+    startTimerBtn.classList.remove('hidden');
+
+    startTimerBtn.addEventListener('click', function handleStart() {
+      startTimerBtn.removeEventListener('click', handleStart);
+
+      // Animate the button out
+      startTimerBtn.style.transition = 'opacity 0.25s ease, transform 0.25s ease';
+      startTimerBtn.style.opacity    = '0';
+      startTimerBtn.style.transform  = 'scale(0.85)';
+
+      setTimeout(function () {
+        startTimerBtn.classList.add('hidden');
+        if (numberWrapper) {
+          numberWrapper.classList.remove('hidden');
+          // Animate in
+          numberWrapper.style.transition = 'opacity 0.3s ease';
+          numberWrapper.style.opacity    = '0';
+          setTimeout(function () { numberWrapper.style.opacity = '1'; }, 10);
+        }
+        onStart();
+      }, 250);
+    }, { once: true });
+  }
+
+  /* ================================================================
      COUNTDOWN WITH PAGE VISIBILITY API
      ─────────────────────────────────────────────────────────────────
      • setInterval drives the 1-second tick.
      • visibilitychange pauses the interval when the user hides the
        tab, and resumes it when they return.
-     • Toast text is pulled from lang.js (toast_paused / toast_resumed)
-       so it automatically respects the active language.
-     • The listener is cleaned up when the timer completes.
-     • [FIX 4] showToast() now clears previous toasts before showing
-       a new one, so rapid tab-switching never stacks messages.
      ================================================================ */
-  function startCountdown(destinationUrl) {
-    var secondsLeft = CONFIG.COUNTDOWN_SECONDS;
+  function startCountdown(destinationUrl, totalSeconds) {
+    totalSeconds = totalSeconds || CONFIG.COUNTDOWN_SECONDS;
+    var secondsLeft = totalSeconds;
     var intervalId  = null;
     var isPaused    = false;
 
@@ -594,10 +579,13 @@ if (IS_LOCKED_PAGE) {
     ringProgress.style.strokeDashoffset = 0;
     countdownNumber.textContent         = secondsLeft;
 
+    // Kick the ring to full immediately
+    updateRing(secondsLeft, totalSeconds);
+
     function tick() {
       secondsLeft -= 1;
       countdownNumber.textContent = secondsLeft;
-      updateRing(secondsLeft, CONFIG.COUNTDOWN_SECONDS);
+      updateRing(secondsLeft, totalSeconds);
       if (secondsLeft <= 0) {
         stopInterval();
         cleanup();
@@ -614,14 +602,12 @@ if (IS_LOCKED_PAGE) {
         if (!isPaused && intervalId !== null) {
           stopInterval();
           isPaused = true;
-          // [FIX 4]: Old toast removed inside showToast() before this new one appears
           showToast(t('toast_paused', 'Timer paused. Please stay on the page.'), 'pause', 4000);
         }
       } else {
         if (isPaused) {
           isPaused = false;
           startInterval();
-          // [FIX 4]: Old toast removed inside showToast() before this new one appears
           showToast(t('toast_resumed', 'Timer resumed. Keep going!'), 'resume', 2500);
         }
       }
@@ -655,14 +641,33 @@ if (IS_LOCKED_PAGE) {
     lucide.createIcons();
   }
 
-  /* ── Anti-AdBlock detection ── */
-  function checkForAdBlocker() {
-    if (!CONFIG.ENABLE_ANTI_ADBLOCK) return;
+  /* ================================================================
+     [FIX 3] SOFT PENALTY ANTI-ADBLOCK
+     ─────────────────────────────────────────────────────────────────
+     OLD behaviour: Show a hard-block overlay (#adblock-overlay)
+       that prevents the user from proceeding entirely.
+
+     NEW behaviour (Soft Penalty):
+       1. Keeps #adblock-overlay hidden — user is NEVER hard-blocked.
+       2. Doubles the countdown timer duration.
+       3. Shows a prominent persistent amber warning toast/banner
+          below the timer: "Adblock Detected. Timer extended…"
+       4. The user can still get their link — just with a longer wait.
+
+     The doubled total seconds are passed to startCountdown() so the
+     ring animation also reflects the extended duration correctly.
+   ================================================================ */
+  function checkForAdBlocker(onResult) {
+    if (!CONFIG.ENABLE_ANTI_ADBLOCK) {
+      onResult(false);
+      return;
+    }
     var bait = document.createElement('div');
     bait.className     = 'pub_300x250 pub_300x250m pub_728x90 text-ad textAd text_ad text_ads text-ads ad-banner adsbox';
     bait.style.cssText = 'width:1px;height:1px;position:absolute;top:-9999px;left:-9999px;opacity:0.001;';
     bait.setAttribute('aria-hidden', 'true');
     document.body.appendChild(bait);
+
     setTimeout(function () {
       var isBlocked = (
         bait.offsetParent  === null ||
@@ -673,25 +678,52 @@ if (IS_LOCKED_PAGE) {
         window.getComputedStyle(bait).visibility === 'hidden'
       );
       document.body.removeChild(bait);
+
       if (isBlocked) {
-        adblockOverlay.classList.remove('hidden');
-        lucide.createIcons();
+        // ── Soft Penalty: do NOT show adblock-overlay ──
+        // Make sure the overlay stays hidden permanently
+        if (adblockOverlay) adblockOverlay.classList.add('hidden');
+
+        // Show the persistent amber warning banner below the countdown ring
+        showAdblockWarningBanner();
       }
+
+      onResult(isBlocked);
     }, 150);
   }
 
-  /* ── [FIX 3] AdBlocker Dismiss: reload instead of just hiding ──
-     The old code did:
-       adblockOverlay.classList.add('hidden');
-     This only hid the UI — the adblock was still active and the
-     overlay would never re-check. Now we reload the full page so
-     checkForAdBlocker() runs fresh. If the user actually disabled
-     their ad blocker, the bait element will pass the test and the
-     overlay will not appear.
-  ── */
+  /* ── Render the persistent adblock warning banner inside the countdown section ── */
+  function showAdblockWarningBanner() {
+    // Prevent duplicate banners
+    if (document.getElementById('adblock-soft-banner')) return;
+
+    var banner = document.createElement('div');
+    banner.id = 'adblock-soft-banner';
+    banner.setAttribute('role', 'alert');
+    banner.setAttribute('aria-live', 'polite');
+
+    // i18n-ready: use data-i18n attribute on the inner span so lang.js can pick it up
+    banner.innerHTML =
+      '<span class="adblock-soft-banner__icon">⚠</span>' +
+      '<span data-i18n="adblock_soft_penalty">Adblock Detected. Timer extended. Please disable it to support us.</span>';
+
+    // Insert it right after the countdown ring wrapper, before the message paragraph
+    var ringWrapper = document.querySelector('.countdown-ring-wrapper');
+    if (ringWrapper && ringWrapper.parentNode) {
+      ringWrapper.parentNode.insertBefore(banner, ringWrapper.nextSibling);
+    } else if (countdownSection) {
+      countdownSection.appendChild(banner);
+    }
+
+    // Apply i18n to the newly injected element
+    applyTranslations();
+    lucide.createIcons();
+  }
+
+  /* ── AdBlocker Dismiss button (kept for compat but overlay is never shown) ──
+     If for any reason the overlay is shown, clicking dismiss reloads the page. */
   if (adblockDismiss) {
     adblockDismiss.addEventListener('click', function () {
-      // [FIX 3] Force a full page reload to re-run the adblock bait test
       window.location.reload();
     });
   }
@@ -713,8 +745,23 @@ if (IS_LOCKED_PAGE) {
       showErrorState();
       return;
     }
-    checkForAdBlocker();
-    startCountdown(destinationUrl);
+
+    // Step 1: Check for adblock (async, ~150ms delay)
+    checkForAdBlocker(function (isBlocked) {
+      // Step 2: Calculate final timer duration
+      var finalSeconds = CONFIG.COUNTDOWN_SECONDS;
+      if (isBlocked) {
+        finalSeconds = CONFIG.COUNTDOWN_SECONDS * 2; // Soft penalty: double timer
+      }
+
+      // Update the displayed number to reflect the correct starting value
+      if (countdownNumber) countdownNumber.textContent = finalSeconds;
+
+      // Step 3: Show the Start button; countdown only begins on click
+      showStartButton(function () {
+        startCountdown(destinationUrl, finalSeconds);
+      });
+    });
   })();
 
 } // end IS_LOCKED_PAGE

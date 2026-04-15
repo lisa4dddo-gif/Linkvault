@@ -185,10 +185,17 @@ window.LV_LANG = {
   adblock_body        : 'This site is supported by advertising. Please disable your ad blocker or whitelist this site to continue and access your link.',
   adblock_dismiss_btn : "I've Disabled My AdBlocker",
 
-  /* ──────────────────────────────────────────────────────────────
+    /* ──────────────────────────────────────────────────────────────
      TOAST NOTIFICATIONS  (script.js — Page Visibility API)
      ────────────────────────────────────────────────────────────── */
   toast_paused  : 'Timer paused. Please stay on the page.',
   toast_resumed : 'Timer resumed. Keep going!',
+
+  /* ──────────────────────────────────────────────────────────────
+     NEW FEATURES (Start Button & Soft Adblock)
+     ────────────────────────────────────────────────────────────── */
+  start_timer_btn      : 'Start Timer',
+  start_timer_aria     : 'Start destination timer',
+  adblock_soft_penalty : 'Adblock Detected. Timer extended. Please disable it to support us.',
 
 };

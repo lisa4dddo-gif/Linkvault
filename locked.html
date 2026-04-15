@@ -2,9 +2,9 @@
 <html lang="en">
 <head>
   
-  <script>
+<script>
   (function() {
-    // ১. চেক করুন URL-এর শেষে admin কমান্ড আছে কি না
+    // 1. Check if the URL contains the admin command
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('admin') === 'true') {
       localStorage.setItem('lv_admin_mode', 'true');
@@ -13,26 +13,49 @@
       localStorage.removeItem('lv_admin_mode');
       alert('❌ Admin Mode Deactivated!\n\nYou are now browsing as a normal visitor.');
     }
-
-    // ২. অ্যাডমিন স্ট্যাটাস চেক করা
+    
+    // 2. Check for localhost or local network environment
+    const hostname = window.location.hostname;
+    const isLocalhost = (
+      hostname === 'localhost' ||
+      hostname === '127.0.0.1' ||
+      hostname === '' || // For file:/// protocol
+      hostname.startsWith('192.168.') // For testing on local WiFi networks
+    );
+    
+    // 3. Check admin status from local storage
     const isAdmin = localStorage.getItem('lv_admin_mode') === 'true';
-
-    if (!isAdmin) {
-      // ৩. সাধারণ ভিজিটর হলে Google Analytics লোড হবে
+    
+    // Load Google Analytics ONLY if it is not an admin and not running locally
+    if (!isAdmin && !isLocalhost) {
+      // 4. Load Google Analytics for normal visitors on the live server
       var gaScript = document.createElement('script');
       gaScript.async = true;
       gaScript.src = 'https://www.googletagmanager.com/gtag/js?id=G-NDFBYZ7962';
       document.head.appendChild(gaScript);
-
+      
       window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
+      
+      function gtag() { dataLayer.push(arguments); }
       gtag('js', new Date());
       gtag('config', 'G-NDFBYZ7962');
     } else {
-      // ৪. অ্যাডমিন হলে ট্র্যাকিং বন্ধ এবং Adsterra/Ads হাইড করে অ্যাকাউন্ট সেফ রাখা
-      console.log('🛡️ Admin Mode Active: Analytics and Ads are disabled for your safety.');
+      // 5. Admin or Localhost: Disable tracking and hide ads to keep accounts safe
+      const safetyReason = isLocalhost ? 'Localhost/Local Network' : 'Admin Mode';
+      console.log(`🛡️ ${safetyReason} Active: Analytics and Ads are disabled for your safety.`);
+      
       var protectStyle = document.createElement('style');
-      protectStyle.innerHTML = '.ad-zone, .ad-zone-inner, iframe { display: none !important; pointer-events: none !important; opacity: 0 !important; }';
+      // Stronger CSS rules to completely hide ad zones, Adsterra, and Google Ads
+      protectStyle.innerHTML = `
+        .ad-zone, .ad-zone-inner, iframe[src*="adsterra"], iframe[name*="google_ads"], 
+        .adsbygoogle, [id^="ad-"] { 
+          display: none !important; 
+          pointer-events: none !important; 
+          opacity: 0 !important; 
+          width: 0 !important; 
+          height: 0 !important; 
+        }
+      `;
       document.head.appendChild(protectStyle);
     }
   })();
@@ -56,8 +79,6 @@
 
   <!-- ═══════════════════════════════════════════════
        OPEN GRAPH — Facebook, WhatsApp, LinkedIn, etc.
-       These tags give the locked page a branded preview
-       when someone shares the locked link URL directly.
        ═══════════════════════════════════════════════ -->
   <meta property="og:type"        content="website" />
   <meta property="og:site_name"   content="LinkVault" />
@@ -68,11 +89,6 @@
   <meta property="og:image:width"  content="1200" />
   <meta property="og:image:height" content="630" />
   <meta property="og:image:alt"    content="LinkVault — Protected Link Gateway" />
-  <!--
-    ↑ Create a second OG image at assets/img/og-locked.webp — ideally
-      a 1200×630 PNG with a padlock graphic and "Your link is protected"
-      text. This makes shares of locked-page URLs look professional.
-  -->
 
   <!-- ═══════════════════════════════════════════════
        TWITTER / X CARDS
@@ -209,9 +225,6 @@
 
   <!-- ═══════════════════════════════════════════════
        [FIX 5] NO-JS FALLBACK
-       Shown only when JavaScript is completely disabled.
-       Without JS the countdown and link reveal cannot run,
-       so we surface a clear, actionable message.
        ═══════════════════════════════════════════════ -->
   <noscript>
     <div class="noscript-warning" role="alert">
@@ -229,7 +242,7 @@
        min-height reserves the 728×90 leaderboard slot
        before the ad network script loads, preventing CLS.
        ═══════════════════════════════════════════════ -->
-  <div id="ad-header-placeholder" class="ad-zone ad-zone--header" aria-label="Advertisement" style="min-height:110px;contain:layout size;"  >
+  <div id="ad-header-placeholder" class="ad-zone ad-zone--header" aria-label="Advertisement" style="min-height:110px;contain:layout size;">
     <div class="ad-zone-inner">
       <!-- ▼▼▼ PASTE YOUR HEADER AD CODE HERE ▼▼▼ -->
       <span class="ad-zone-label">Advertisement</span>
@@ -243,6 +256,9 @@
 
   <!-- ═══════════════════════════════════════════════
        ANTI-ADBLOCK OVERLAY
+       NOTE: script.js no longer hard-shows this overlay.
+       A "Soft Penalty" (doubled timer + banner) is used
+       instead. This element is kept for backward compat.
        ═══════════════════════════════════════════════ -->
   <div id="adblock-overlay" class="adblock-overlay hidden" role="dialog" aria-modal="true" aria-label="AdBlock Detected">
     <div class="adblock-modal">
@@ -268,9 +284,9 @@
 
         <!-- Branding — "LinkVault" brand name is NOT translated -->
         <a href="index.html" class="locked-logo">
-  <img src="assets/img/logo.png" alt="Logo" class="custom-logo-img" />
-  Link<span class="accent">Vault</span>
-</a>
+          <img src="assets/img/logo.png" alt="Logo" class="custom-logo-img" />
+          Link<span class="accent">Vault</span>
+        </a>
 
         <!-- Security badge -->
         <div class="locked-badge">
@@ -320,11 +336,37 @@
               <circle class="ring-track"    cx="60" cy="60" r="52" />
               <circle id="ring-progress" class="ring-progress" cx="60" cy="60" r="52" />
             </svg>
+
+            <!--
+              [NEW] START TIMER BUTTON
+              ─────────────────────────────────────────
+              Shown initially inside the ring area.
+              Clicking it triggers the countdown to begin.
+              Script.js hides this and shows the number
+              wrapper once clicked.
+
+              data-i18n attributes are included so lang.js
+              can translate both the aria-label and the
+              visible label span.
+              ───────────────────────────────────────── -->
+            <button
+              id="start-timer-btn"
+              class="hidden"
+              aria-label="Start destination timer"
+              data-i18n-aria-label="start_timer_aria"
+            >
+              <i data-lucide="play-circle"></i>
+              <span class="start-btn-label" data-i18n="start_timer_btn">Start Timer</span>
+            </button>
+
+            <!--
+              Number + unit — hidden while start button is shown,
+              revealed by script.js once the timer begins.
+            -->
             <div class="countdown-number-wrapper">
               <span id="countdown-number" class="countdown-number">10</span>
               <!--
-                countdown_unit is also set programmatically in script.js
-                (so it stays correct even if the section is re-shown).
+                countdown_unit is also set programmatically in script.js.
                 The data-i18n attribute handles the initial render.
               -->
               <span class="countdown-unit" data-i18n="countdown_unit">sec</span>
@@ -335,6 +377,16 @@
             <i data-lucide="hourglass"></i>
             <span data-i18n="countdown_message">Please wait while your link is being prepared…</span>
           </p>
+
+          <!--
+            [NEW] ADBLOCK SOFT PENALTY BANNER MOUNT POINT
+            ───────────────────────────────────────────────
+            script.js injects #adblock-soft-banner here
+            (immediately after .countdown-ring-wrapper) when
+            an ad blocker is detected. No static markup needed;
+            it's created dynamically so non-adblock users never
+            download the HTML for it.
+          -->
         </div>
 
         <!-- ─────────────────────────────────────────
@@ -407,7 +459,8 @@
   <!-- ▼▼▼ PASTE YOUR POP-UNDER / DIRECT LINK SCRIPT HERE ▼▼▼ -->
   <!-- ▲▲▲ END POP-UNDER SCRIPT ▲▲▲ -->
 
-  <script src="assets/js/site-config.js"></script> <script src="assets/js/ads.js"></script>
+  <script src="assets/js/site-config.js"></script>
+  <script src="assets/js/ads.js"></script>
   <script src="assets/js/script.js"></script>
   <script>
     lucide.createIcons();

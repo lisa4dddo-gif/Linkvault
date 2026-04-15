@@ -20,9 +20,11 @@
    15. Ad Zones
    16. AntiAdblock Overlay
    17. Countdown Ring
-   18. Get Link Section
-   19. Scroll Reveal Animations
-   20. Responsive Breakpoints
+   18. Start Timer Button  [NEW]
+   19. Adblock Soft Penalty Banner  [NEW]
+   20. Get Link Section
+   21. Scroll Reveal Animations
+   22. Responsive Breakpoints
    ================================================================ */
 
 
@@ -460,7 +462,7 @@ nav, main, header, section, footer,
   font-size: 0.9rem;
   color: var(--clr-text);
   padding: 0.5rem 0;
-  min-width: 0; /* Fix flex overflow */
+  min-width: 0;
 }
 
 .url-input::placeholder { color: var(--clr-text-dim); }
@@ -660,7 +662,7 @@ nav, main, header, section, footer,
   width: 1px;
   height: 32px;
   background: linear-gradient(to bottom, var(--clr-border-glow), var(--clr-border));
-  margin-left: calc(var(--space-xl) + 2.8rem); /* Align with step number center */
+  margin-left: calc(var(--space-xl) + 2.8rem);
 }
 
 
@@ -702,7 +704,6 @@ nav, main, header, section, footer,
   align-items: center;
   justify-content: center;
   padding: var(--space-2xl) 0;
-  /* Extra bottom padding for the sticky ad bar */
   padding-bottom: calc(var(--space-2xl) + 100px);
 }
 
@@ -837,7 +838,7 @@ nav, main, header, section, footer,
   letter-spacing: 0.1em;
 }
 
-/* Demo placeholder box (buyers replace this with real ad code) */
+/* Demo placeholder box */
 .ad-demo-box {
   display: flex;
   flex-direction: column;
@@ -882,6 +883,8 @@ nav, main, header, section, footer,
 
 /* ════════════════════════════════════════════════
    16. ANTI-ADBLOCK OVERLAY
+   (kept in DOM for compatibility, but script.js
+    will never show it — Soft Penalty is used instead)
    ════════════════════════════════════════════════ */
 .adblock-overlay {
   position: fixed;
@@ -974,12 +977,8 @@ nav, main, header, section, footer,
   stroke-linecap: round;
   stroke-dasharray: var(--ring-circumference);
   stroke-dashoffset: 0;
-  /* Transition is controlled by JS for smooth animation */
   transition: stroke-dashoffset 1s linear;
 }
-
-/* The gradient for the SVG ring is defined inline via a defs element */
-/* added dynamically by script.js so it works across browsers */
 
 .countdown-number-wrapper {
   position: absolute;
@@ -1023,7 +1022,169 @@ nav, main, header, section, footer,
 
 
 /* ════════════════════════════════════════════════
-   18. GET LINK SECTION
+   18. START TIMER BUTTON  [NEW]
+   ─────────────────────────────────────────────────
+   Sits inside .countdown-number-wrapper (absolute,
+   inset: 0) so it perfectly overlays the ring.
+   Matches the dark/cyberpunk glassmorphism aesthetic:
+     • Gradient border via box-shadow layering
+     • Glassmorphism backdrop-filter
+     • Pulsing glow animation (reuses pulse-ring logic)
+     • Hover: lifts with stronger glow + slight scale
+   ════════════════════════════════════════════════ */
+#start-timer-btn {
+  /* Positioning: fill the ring wrapper */
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+
+  /* Shape & glass effect */
+  border-radius: 50%;
+  background: rgba(0, 224, 255, 0.07);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  border: none;
+  outline: none;
+  cursor: pointer;
+
+  /* Typography */
+  font-family: var(--font-display);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--clr-accent);
+
+  /* Gradient ring using box-shadow */
+  box-shadow:
+    0 0 0 2px rgba(0, 224, 255, 0.35),
+    0 0 20px rgba(0, 224, 255, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+
+  /* Pulsing attention animation */
+  animation: start-btn-pulse 2.2s ease-in-out infinite;
+
+  /* Smooth transitions */
+  transition:
+    background   var(--dur-fast) var(--ease-out),
+    box-shadow   var(--dur-med)  var(--ease-out),
+    transform    var(--dur-fast) var(--ease-snap),
+    color        var(--dur-fast);
+}
+
+#start-timer-btn svg {
+  width: 28px;
+  height: 28px;
+  color: var(--clr-accent);
+  transition: transform var(--dur-med) var(--ease-snap);
+  /* Undo the parent SVG rotate(-90deg) that's on .countdown-ring */
+  /* The icon is a regular HTML element so it does NOT inherit the SVG transform */
+}
+
+#start-timer-btn:hover {
+  background: rgba(0, 224, 255, 0.14);
+  color: #ffffff;
+  box-shadow:
+    0 0 0 2.5px rgba(0, 224, 255, 0.7),
+    0 0 40px rgba(0, 224, 255, 0.35),
+    0 0 80px rgba(0, 224, 255, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  transform: scale(1.04);
+  animation-play-state: paused; /* Stop pulsing on hover for a clean feel */
+}
+
+#start-timer-btn:hover svg {
+  color: #ffffff;
+  transform: scale(1.15);
+}
+
+#start-timer-btn:active {
+  transform: scale(0.97);
+  box-shadow:
+    0 0 0 2px rgba(0, 224, 255, 0.5),
+    0 0 16px rgba(0, 224, 255, 0.25);
+}
+
+/* The icon + label text wrapper */
+#start-timer-btn .start-btn-label {
+  display: block;
+  line-height: 1.2;
+  text-align: center;
+  pointer-events: none;
+}
+
+@keyframes start-btn-pulse {
+  0%, 100% {
+    box-shadow:
+      0 0 0 2px rgba(0, 224, 255, 0.35),
+      0 0 20px rgba(0, 224, 255, 0.12),
+      inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  }
+  50% {
+    box-shadow:
+      0 0 0 3px rgba(0, 224, 255, 0.6),
+      0 0 40px rgba(0, 224, 255, 0.28),
+      0 0 0 10px rgba(0, 224, 255, 0.06),
+      inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  }
+}
+
+
+/* ════════════════════════════════════════════════
+   19. ADBLOCK SOFT PENALTY BANNER  [NEW]
+   ─────────────────────────────────────────────────
+   Injected by script.js below the countdown ring
+   when an ad blocker is detected. Styled to be
+   prominent but not hostile — amber/warning palette,
+   glassmorphism card, smooth entrance animation.
+   ════════════════════════════════════════════════ */
+#adblock-soft-banner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+
+  width: 100%;
+  padding: 0.7rem 1.1rem;
+  border-radius: var(--radius-md);
+
+  background: linear-gradient(
+    135deg,
+    rgba(245, 166, 35, 0.12) 0%,
+    rgba(230, 81, 0, 0.09) 100%
+  );
+  border: 1px solid rgba(245, 166, 35, 0.3);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #f5c842;
+  text-align: center;
+  line-height: 1.4;
+
+  animation: adblock-banner-in 0.45s var(--ease-snap) both;
+}
+
+#adblock-soft-banner .adblock-soft-banner__icon {
+  font-size: 1rem;
+  flex-shrink: 0;
+  line-height: 1;
+  filter: drop-shadow(0 0 4px rgba(245, 166, 35, 0.5));
+}
+
+@keyframes adblock-banner-in {
+  0%   { opacity: 0; transform: translateY(8px) scale(0.97); }
+  100% { opacity: 1; transform: translateY(0)   scale(1);    }
+}
+
+
+/* ════════════════════════════════════════════════
+   20. GET LINK SECTION
    ════════════════════════════════════════════════ */
 .get-link-section {
   width: 100%;
@@ -1067,7 +1228,7 @@ nav, main, header, section, footer,
 
 
 /* ════════════════════════════════════════════════
-   19. SCROLL REVEAL ANIMATIONS
+   21. SCROLL REVEAL ANIMATIONS
    ════════════════════════════════════════════════ */
 .reveal {
   opacity: 0;
@@ -1104,7 +1265,7 @@ nav, main, header, section, footer,
 
 
 /* ════════════════════════════════════════════════
-   20. RESPONSIVE BREAKPOINTS
+   22. RESPONSIVE BREAKPOINTS
    ════════════════════════════════════════════════ */
 
 /* ── Small Mobile (≤ 420px) ── */
@@ -1114,6 +1275,16 @@ nav, main, header, section, footer,
   .btn-icon  { display: flex; }
   .stats-bar { gap: var(--space-lg); }
   .stat-divider { display: none; }
+
+  /* Slightly smaller start button label on tiny screens */
+  #start-timer-btn {
+    font-size: 0.55rem;
+    letter-spacing: 0.06em;
+  }
+  #start-timer-btn svg {
+    width: 24px;
+    height: 24px;
+  }
 }
 
 /* ── Tablet and up (≥ 768px) ── */
@@ -1143,11 +1314,6 @@ nav, main, header, section, footer,
 
 /* ════════════════════════════════════════════════
    [FIX 5-A] NO-JS FALLBACK WARNING
-   ─────────────────────────────────────────────────
-   Displayed via <noscript> in index.html and
-   locked.html when JavaScript is disabled.
-   Sits at the very top of the page, above all other
-   content, so the visitor sees it immediately.
    ════════════════════════════════════════════════ */
 .noscript-warning {
   position: relative;
@@ -1176,40 +1342,22 @@ nav, main, header, section, footer,
 
 /* ════════════════════════════════════════════════
    [FIX 5-B] AD ZONE MIN-HEIGHT — CLS PREVENTION
-   ─────────────────────────────────────────────────
-   Before an ad network script loads and injects its
-   iframe/creative, the .ad-zone containers have no
-   intrinsic height, causing a Cumulative Layout Shift
-   (CLS) that hurts Core Web Vitals scores.
-
-   Setting explicit min-height values that match the
-   standard ad slot sizes reserves the space up front
-   so the page layout does not reflow when ads appear.
-
-   Slot sizes used:
-     Header banner  → 728×90  (Leaderboard)
-     Content square → 300×250 (Medium Rectangle)
-     Sticky footer  → 728×90  (Leaderboard)
-
-   Adjust the pixel values here if you use different
-   ad formats (e.g. 320×50 Mobile Banner).
    ════════════════════════════════════════════════ */
 
-/* Header leaderboard banner — 90px content + inner padding */
+/* Header leaderboard banner */
 .ad-zone--header {
-  min-height: 110px; /* 90px ad + ~20px label + gap */
+  min-height: 110px;
 }
 
 /* Side / content square (300×250 Medium Rectangle) */
 .ad-zone--content {
-  min-height: 280px; /* 250px ad + ~30px label + gap */
+  min-height: 280px;
 }
 
-/* Sticky footer leaderboard — fixed at bottom, thinner chrome */
+/* Sticky footer leaderboard */
 .ad-zone--sticky {
-  min-height: 70px;  /* 50px ad + ~20px label */
+  min-height: 70px;
 }
-
 
 
 /* Custom Image Logo Style */
@@ -1217,7 +1365,7 @@ nav, main, header, section, footer,
   width: 32px;
   height: 32px;
   object-fit: contain;
-  border-radius: 8px; 
+  border-radius: 8px;
 }
 
 .locked-logo .custom-logo-img {
