@@ -151,16 +151,22 @@ applyTranslations();
    decodeDestUrl(str)  : base64-decode it, then reverse it back.
    ================================================================ */
 function encodeDestUrl(str) {
-  var utf8Safe = unescape(encodeURIComponent(str));
-  var reversed = utf8Safe.split('').reverse().join('');
-  return btoa(reversed);
+  var reversed = str.split('').reverse().join('');
+  // Modern UTF-8 safe encoding
+  var encoded = encodeURIComponent(reversed).replace(/%([0-9A-F]{2})/g, function(match, p1) {
+    return String.fromCharCode('0x' + p1);
+  });
+  return btoa(encoded);
 }
 
 function decodeDestUrl(encoded) {
   try {
-    var reversed = atob(encoded);
-    var utf8Safe = reversed.split('').reverse().join('');
-    return decodeURIComponent(escape(utf8Safe));
+    var decoded = atob(encoded);
+    var reversedUtf8 = decoded.split('').map(function(c) {
+      return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+    }).join('');
+    var original = decodeURIComponent(reversedUtf8);
+    return original.split('').reverse().join('');
   } catch (_) {
     return null;
   }
@@ -430,6 +436,16 @@ if (IS_INDEX_PAGE) {
       
       // 6. Focus back on the input box ready for a new link
       urlInput.focus();
+
+      // 7. Close the Meta Panel if it is open (New Fix)
+      var metaToggleBtn = document.getElementById('meta-toggle');
+      var metaFieldsPanel = document.getElementById('meta-fields-panel');
+      
+      if (metaFieldsPanel && metaFieldsPanel.classList.contains('open')) {
+        metaFieldsPanel.classList.remove('open');
+        metaToggleBtn.classList.remove('open');
+        metaToggleBtn.setAttribute('aria-expanded', 'false');
+      }
     });
   }
 

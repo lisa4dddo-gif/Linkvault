@@ -197,5 +197,5 @@ window.LV_LANG = {
   start_timer_btn      : 'Start Timer',
   start_timer_aria     : 'Start destination timer',
   adblock_soft_penalty : 'Adblock Detected. Timer extended. Please disable it to support us.',
-
+  toast_shorten_fail   : 'Shortener servers busy. Using long URL.',
 };

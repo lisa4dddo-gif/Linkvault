@@ -1008,21 +1008,18 @@
         .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
     }
 
-    /* ── Get value from any active ad panel textarea ── */
+    /* ── Get value from ONLY the active ad panel ── */
     function getAdCode(slot) {
-      /* Try active panel first, then fall back to others */
-      var ids = [
-        'ad-' + slot + '-adsterra',
-        'ad-' + slot + '-propeller',
-        'ad-' + slot + '-hilltop',
-        'ad-' + slot + '-custom'
-      ];
-      for (var i = 0; i < ids.length; i++) {
-        var el = document.getElementById(ids[i]);
-        if (el && el.value.trim()) return el.value.trim();
-      }
+      var activePanel = document.querySelector('.ad-panel.active');
+      if (!activePanel) return '';
+      
+      var network = activePanel.id.replace('panel-', ''); // e.g., 'adsterra', 'propeller'
+      var el = document.getElementById('ad-' + slot + '-' + network);
+      
+      if (el && el.value.trim()) return el.value.trim();
       return '';
     }
+
 
     /* ── Minimal JS syntax coloring for display ── */
     function colorize(code) {
@@ -1045,24 +1042,33 @@
        ================================================================ */
     function generateConfig() {
 
-      /* ── 1. Read all form values ── */
-      var brandName       = document.getElementById('brand-name').value.trim()       || 'LinkVault';
-      var siteUrl         = document.getElementById('site-url').value.trim()         || 'https://yourdomain.com';
-      var tagline         = document.getElementById('tagline').value.trim()          || '';
-      var authorName      = document.getElementById('author-name').value.trim()      || 'MD KAWSAR';
+           /* ── 1. Read all form values (with Secure String Escaping) ── */
+      function safeStr(id, fallback) {
+        var val = document.getElementById(id).value.trim() || fallback;
+        // Escapes double quotes and removes line breaks to prevent JS syntax errors
+        return val.replace(/"/g, '\\"').replace(/\n/g, ' '); 
+      }
+
+      var brandName       = safeStr('brand-name', 'LinkVault');
+      var siteUrl         = safeStr('site-url', 'https://yourdomain.com');
+      var tagline         = safeStr('tagline', '');
+      var authorName      = safeStr('author-name', 'MD KAWSAR');
+      var lockedFilename  = safeStr('locked-filename', 'locked.html');
       var timerSeconds    = parseInt(document.getElementById('timer-seconds').value) || 10;
-      var lockedFilename  = document.getElementById('locked-filename').value.trim()  || 'locked.html';
+      
       var enableAdblock   = document.getElementById('enable-adblock').checked;
       var enableVisibility= document.getElementById('enable-visibility').checked;
       var openNewTab      = document.getElementById('open-new-tab').checked;
-      var colorBg         = document.getElementById('hex-bg').value.trim()           || '#080c14';
-      var colorAccent     = document.getElementById('hex-accent').value.trim()       || '#00e0ff';
-      var colorCard       = document.getElementById('hex-card').value.trim()         || '#0e1420';
-      var ogTitle         = document.getElementById('og-title').value.trim()         || brandName + ' — Monetize Every Click';
-      var ogDesc          = document.getElementById('og-desc').value.trim()          || '';
-      var ogImage         = document.getElementById('og-image').value.trim()         || siteUrl + '/assets/img/og-cover.webp';
-      var twitterHandle   = document.getElementById('twitter-handle').value.trim()   || '';
-      var gaId            = document.getElementById('ga-id').value.trim()            || '';
+      
+      var colorBg         = document.getElementById('hex-bg').value.trim()     || '#080c14';
+      var colorAccent     = document.getElementById('hex-accent').value.trim() || '#00e0ff';
+      var colorCard       = document.getElementById('hex-card').value.trim()   || '#0e1420';
+      
+      var ogTitle         = safeStr('og-title', brandName + ' — Monetize Every Click');
+      var ogDesc          = safeStr('og-desc', '');
+      var ogImage         = safeStr('og-image', siteUrl + '/assets/img/og-cover.webp');
+      var twitterHandle   = safeStr('twitter-handle', '');
+      var gaId            = safeStr('ga-id', '');
 
       /* ── 2. Collect ad codes ── */
       var adHeader   = getAdCode('header')   || '<!-- Add your header ad code here -->';
