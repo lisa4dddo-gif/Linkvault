@@ -249,8 +249,9 @@ function showToast(message, type, duration) {
 if (IS_INDEX_PAGE) {
 
   var lockBtn       = document.getElementById('lock-btn');
-  var urlInput      = document.getElementById('destination-url');
+   var urlInput      = document.getElementById('destination-url');
   var urlError      = document.getElementById('url-error');
+  var clearBtn      = document.getElementById('clear-btn'); // NEW VARIABLE
   var outputWrapper = document.getElementById('output-wrapper');
   var outputUrl     = document.getElementById('output-url');
   var copyBtn       = document.getElementById('copy-btn');
@@ -386,9 +387,52 @@ if (IS_INDEX_PAGE) {
     previewLink.href      = finalUrl;
   }
 
-  lockBtn.addEventListener('click', handleLockUrl);
-  urlInput.addEventListener('keydown', function (e) { if (e.key === 'Enter') handleLockUrl(); });
-  urlInput.addEventListener('input', clearError);
+   lockBtn.addEventListener('click', handleLockUrl);
+  
+  urlInput.addEventListener('keydown', function (e) { 
+    if (e.key === 'Enter') handleLockUrl(); 
+  });
+  
+  // UPDATED: Show or hide the clear button based on input text
+  urlInput.addEventListener('input', function() {
+    clearError();
+    if (clearBtn) {
+      if (urlInput.value.trim().length > 0) {
+        clearBtn.style.display = 'inline-flex';
+      } else {
+        clearBtn.style.display = 'none';
+      }
+    }
+  });
+
+
+  // NEW: Clear Button functionality to reset the UI for a new link
+  if (clearBtn) {
+    clearBtn.addEventListener('click', function() {
+      // 1. Clear main URL input
+      urlInput.value = '';
+      
+      // 2. Clear optional meta fields if they exist
+      if (metaTitleInput) metaTitleInput.value = '';
+      if (metaSizeInput) metaSizeInput.value = '';
+      
+      // 3. Hide the generated link output wrapper
+      outputWrapper.classList.add('hidden');
+      clearError();
+      
+      // 4. Hide the clear button itself
+      clearBtn.style.display = 'none';
+      
+      // 5. Re-enable the lock button in case it was disabled
+      lockBtn.disabled = false;
+      lockBtn.style.opacity = '1';
+      lockBtn.style.cursor = 'pointer';
+      
+      // 6. Focus back on the input box ready for a new link
+      urlInput.focus();
+    });
+  }
+
 
   /* ── Copy button ── */
   copyBtn.addEventListener('click', function () {

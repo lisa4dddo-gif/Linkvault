@@ -327,7 +327,7 @@
 
           <label for="destination-url" class="sr-only" data-i18n="url_input_label">Destination URL</label>
 
-          <div class="input-row">
+                   <div class="input-row">
             <span class="input-prefix"><i data-lucide="link-2"></i></span>
             <input
               type="url"
@@ -338,11 +338,17 @@
               autocomplete="off"
               spellcheck="false"
             />
+            
+            <button id="clear-btn" type="button" style="display: none; align-items: center; justify-content: center; background: transparent; border: none; color: rgba(255,255,255,0.4); padding: 0 0.6rem; cursor: pointer; transition: color 0.2s;" title="Clear input">
+              <i data-lucide="x" style="width: 18px; height: 18px;"></i>
+            </button>
+
             <button id="lock-btn" class="btn btn-primary" type="button">
               <span class="btn-text" data-i18n="lock_btn">Lock & Earn</span>
               <span class="btn-icon"><i data-lucide="arrow-right"></i></span>
             </button>
           </div>
+
 
           <!--
             JS error strings come from lang.js keys:
