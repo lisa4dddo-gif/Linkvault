@@ -95,21 +95,50 @@
   ].join('\n'));
   
   /* ════════════════════════════════════════════════════════
-     POP-UNDER / DIRECT LINK AD
-     Runs immediately on page load. Does not inject into a div.
+     POP-UNDER / DIRECT LINK AD (STRICT ONCE-PER-SESSION)
+     Ensures the pop-under triggers ONLY ONCE per browser session.
+     This protects the "Get Link" button from triggering ads again,
+     providing a much better and less annoying User Experience.
      ════════════════════════════════════════════════════════ */
-  (function runPopunder() {
-    var html = "<script src=\"https://pl29152099.profitablecpmratenetwork.com/3c/c0/51/3cc05138b92b7a022893047b25aeeb40.js\"></script>";
-    if (!html.trim()) return;
-    var div = document.createElement("div");
-    div.innerHTML = html;
-    var scripts = div.getElementsByTagName("script");
-    for (var i = 0; i < scripts.length; i++) {
-      var s = document.createElement("script");
-      if (scripts[i].src) s.src = scripts[i].src;
-      else s.textContent = scripts[i].textContent;
-      document.body.appendChild(s);
+  (function runPopunderStrict() {
+    // 1. Check if the ad has already been triggered in this session
+    if (sessionStorage.getItem('lv_popunder_shown') === 'true') {
+      return; // Stop execution immediately if already shown
     }
+
+    var isLoaded = false;
+    // Replace the URL below with your actual Adsterra pop-under script
+    var html = "<script src=\"https://pl29152099.profitablecpmratenetwork.com/3c/c0/51/3cc05138b92b7a022893047b25aeeb40.js\"></script>";
+    
+    if (!html.trim()) return;
+
+    function triggerAd() {
+      if (isLoaded) return;
+      isLoaded = true;
+
+      // 2. Mark the ad as shown in the browser's session storage
+      sessionStorage.setItem('lv_popunder_shown', 'true');
+
+      // 3. Inject the ad network script
+      var div = document.createElement("div");
+      div.innerHTML = html;
+      var scripts = div.getElementsByTagName("script");
+      
+      for (var i = 0; i < scripts.length; i++) {
+        var s = document.createElement("script");
+        if (scripts[i].src) s.src = scripts[i].src;
+        else s.textContent = scripts[i].textContent;
+        document.body.appendChild(s);
+      }
+
+      // 4. Remove listeners so it doesn't fire again on this specific page load
+      document.removeEventListener('click', triggerAd);
+      document.removeEventListener('touchstart', triggerAd);
+    }
+
+    // Attach listeners to trigger the injection on the first interaction
+    document.addEventListener('click', triggerAd);
+    document.addEventListener('touchstart', triggerAd);
   })();
   
 })();
