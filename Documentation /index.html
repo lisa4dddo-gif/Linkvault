@@ -1,0 +1,1403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<title>LinkVault — Official Documentation</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&family=Inter:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+/* ── RESET & BASE ── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#080c14;
+  --bg2:#0d1220;
+  --bg3:#111827;
+  --cyan:#00e0ff;
+  --cyan2:#00b8d4;
+  --blue:#2979ff;
+  --blue2:#0d47a1;
+  --glass:rgba(13,18,32,0.7);
+  --glass-border:rgba(0,224,255,0.12);
+  --text:#e2e8f0;
+  --text-muted:#8892a4;
+  --text-dim:#4a5568;
+  --sidebar-w:280px;
+  --header-h:60px;
+  --radius:14px;
+  --radius-sm:8px;
+  --font-display:'Syne',sans-serif;
+  --font-body:'Inter',sans-serif;
+  --font-mono:'DM Mono',monospace;
+}
+html{scroll-behavior:smooth;scroll-padding-top:80px}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:var(--font-body);
+  font-size:15px;
+  line-height:1.75;
+  overflow-x:hidden;
+}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:var(--bg2)}
+::-webkit-scrollbar-thumb{background:rgba(0,224,255,0.25);border-radius:99px}
+::-webkit-scrollbar-thumb:hover{background:rgba(0,224,255,0.5)}
+
+/* ── NOISE OVERLAY ── */
+body::before{
+  content:'';
+  position:fixed;inset:0;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events:none;z-index:0;opacity:0.4;
+}
+
+/* ── GRID BACKGROUND ── */
+body::after{
+  content:'';
+  position:fixed;inset:0;
+  background-image:
+    linear-gradient(rgba(0,224,255,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,224,255,0.03) 1px, transparent 1px);
+  background-size:40px 40px;
+  pointer-events:none;z-index:0;
+}
+
+/* ── HEADER ── */
+.header{
+  position:fixed;top:0;left:0;right:0;
+  height:var(--header-h);
+  background:rgba(8,12,20,0.85);
+  backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--glass-border);
+  display:flex;align-items:center;
+  padding:0 1.5rem;
+  z-index:100;
+  gap:1rem;
+}
+.header-logo{
+  display:flex;align-items:center;gap:0.6rem;
+  font-family:var(--font-display);
+  font-weight:800;font-size:1.15rem;
+  color:#fff;letter-spacing:-0.01em;
+  text-decoration:none;
+}
+.logo-icon{
+  width:30px;height:30px;
+  background:linear-gradient(135deg,var(--cyan),var(--blue));
+  border-radius:8px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:0.9rem;
+}
+.header-badge{
+  font-size:0.65rem;font-family:var(--font-mono);font-weight:500;
+  background:rgba(0,224,255,0.1);border:1px solid rgba(0,224,255,0.25);
+  color:var(--cyan);padding:2px 8px;border-radius:99px;letter-spacing:0.08em;
+}
+.header-spacer{flex:1}
+.hamburger{
+  display:none;
+  background:none;border:none;cursor:pointer;
+  padding:6px;border-radius:8px;
+  color:var(--text);
+  transition:color 0.2s;
+}
+.hamburger:hover{color:var(--cyan)}
+.hamburger svg{display:block;width:22px;height:22px}
+
+/* ── LAYOUT ── */
+.layout{
+  display:flex;
+  padding-top:var(--header-h);
+  min-height:100vh;
+  position:relative;z-index:1;
+}
+
+/* ── SIDEBAR ── */
+.sidebar{
+  position:fixed;
+  top:var(--header-h);
+  left:0;
+  width:var(--sidebar-w);
+  height:calc(100vh - var(--header-h));
+  overflow-y:auto;
+  background:rgba(13,18,32,0.6);
+  backdrop-filter:blur(20px);
+  border-right:1px solid var(--glass-border);
+  padding:1.5rem 0 3rem;
+  z-index:50;
+  transition:transform 0.3s cubic-bezier(0.4,0,0.2,1);
+}
+.sidebar::-webkit-scrollbar{width:3px}
+
+.sidebar-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.6);
+  /* Fallback dark background if blur is unsupported */
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  z-index: 49;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.sidebar-overlay.active {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+
+.sidebar-label{
+  font-family:var(--font-mono);font-size:0.65rem;
+  font-weight:500;letter-spacing:0.15em;
+  text-transform:uppercase;color:var(--text-dim);
+  padding:0.5rem 1.5rem 0.35rem;margin-top:1rem;
+}
+.sidebar-label:first-child{margin-top:0}
+
+.nav-link{
+  display:flex;align-items:center;gap:0.6rem;
+  padding:0.5rem 1.5rem;
+  color:var(--text-muted);
+  text-decoration:none;font-size:0.875rem;font-weight:400;
+  border-left:2px solid transparent;
+  transition:all 0.2s;
+  line-height:1.4;
+}
+.nav-link:hover{color:var(--text);background:rgba(0,224,255,0.04);border-left-color:rgba(0,224,255,0.3)}
+.nav-link.active{color:var(--cyan);background:rgba(0,224,255,0.06);border-left-color:var(--cyan);font-weight:500}
+.nav-link .nav-icon{font-size:0.85rem;opacity:0.7;flex-shrink:0;width:16px;text-align:center}
+
+/* ── MAIN CONTENT ── */
+.main{
+  margin-left:var(--sidebar-w);
+  flex:1;
+  padding:3rem 4rem 5rem 3.5rem;
+  max-width:calc(100% - var(--sidebar-w));
+}
+
+/* ── SECTION ── */
+.section{
+  margin-bottom:4rem;
+  scroll-margin-top:80px;
+}
+.section+.section{padding-top:2rem;border-top:1px solid rgba(0,224,255,0.06)}
+
+/* ── TYPOGRAPHY ── */
+h1,h2,h3,h4{font-family:var(--font-display);line-height:1.2;letter-spacing:-0.02em}
+h1{font-size:clamp(2rem,4vw,3rem);font-weight:800;margin-bottom:1rem}
+h2{font-size:clamp(1.4rem,2.5vw,1.9rem);font-weight:700;margin-bottom:0.75rem;color:#fff}
+h3{font-size:1.15rem;font-weight:700;margin-bottom:0.5rem;color:var(--text)}
+h4{font-size:0.95rem;font-weight:600;margin-bottom:0.4rem;color:var(--text-muted);letter-spacing:0.05em;text-transform:uppercase;font-family:var(--font-mono)}
+p{color:var(--text-muted);margin-bottom:1rem}
+p:last-child{margin-bottom:0}
+strong{color:var(--text);font-weight:600}
+a{color:var(--cyan);text-decoration:none}
+a:hover{text-decoration:underline}
+
+/* ── HERO ── */
+.hero{
+  padding:2rem 0 3rem;
+  position:relative;
+}
+.hero-tag{
+  display:inline-flex;align-items:center;gap:0.4rem;
+  font-family:var(--font-mono);font-size:0.7rem;letter-spacing:0.12em;
+  text-transform:uppercase;color:var(--cyan2);
+  background:rgba(0,224,255,0.07);border:1px solid rgba(0,224,255,0.2);
+  padding:4px 12px;border-radius:99px;margin-bottom:1rem;
+}
+.hero-tag::before{content:'●';font-size:0.5rem;animation:blink 1.5s ease-in-out infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
+.hero h1 span{
+  background:linear-gradient(90deg,var(--cyan),#7c3aed,var(--blue));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.hero-sub{font-size:1.05rem;color:var(--text-muted);max-width:580px;line-height:1.8;margin-bottom:2rem}
+.hero-meta{
+  display:flex;align-items:center;gap:1rem;flex-wrap:wrap;
+  font-family:var(--font-mono);font-size:0.75rem;color:var(--text-dim);
+}
+.hero-meta-item{display:flex;align-items:center;gap:0.4rem}
+.hero-meta-item span:first-child{color:var(--cyan);opacity:0.7}
+
+/* ── FEATURE GRID ── */
+.feature-grid{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
+  gap:1rem;margin:1.5rem 0;
+}
+.feature-card{
+  background:var(--glass);
+  border:1px solid var(--glass-border);
+  border-radius:var(--radius);
+  padding:1.25rem;
+  position:relative;overflow:hidden;
+  transition:border-color 0.3s,transform 0.2s;
+}
+.feature-card:hover{border-color:rgba(0,224,255,0.3);transform:translateY(-2px)}
+.feature-card::before{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(circle at top left,rgba(0,224,255,0.05),transparent 70%);
+  pointer-events:none;
+}
+.feature-icon{
+  width:36px;height:36px;border-radius:10px;
+  background:linear-gradient(135deg,rgba(0,224,255,0.15),rgba(41,121,255,0.15));
+  border:1px solid rgba(0,224,255,0.2);
+  display:flex;align-items:center;justify-content:center;
+  font-size:1rem;margin-bottom:0.75rem;
+}
+.feature-card h3{font-size:0.9rem;margin-bottom:0.3rem;color:#fff}
+.feature-card p{font-size:0.8rem;color:var(--text-dim);margin:0}
+
+/* ── GLASS CARD ── */
+.glass-card{
+  background:var(--glass);
+  border:1px solid var(--glass-border);
+  border-radius:var(--radius);
+  padding:1.75rem;
+  margin:1.5rem 0;
+}
+
+/* ── STEPS ── */
+.steps{display:flex;flex-direction:column;gap:0;margin:1.5rem 0}
+.step{
+  display:flex;gap:1.25rem;
+  padding:1.25rem 0;
+  border-bottom:1px solid rgba(0,224,255,0.06);
+  position:relative;
+}
+.step:last-child{border-bottom:none}
+.step-num{
+  width:32px;height:32px;flex-shrink:0;
+  border-radius:50%;
+  background:linear-gradient(135deg,rgba(0,224,255,0.2),rgba(41,121,255,0.2));
+  border:1px solid rgba(0,224,255,0.3);
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--font-mono);font-weight:500;font-size:0.8rem;
+  color:var(--cyan);
+}
+.step-body{flex:1}
+.step-body h3{margin-bottom:0.35rem}
+.step-body p{font-size:0.875rem;margin:0}
+
+/* ── CODE BLOCK ── */
+.code-block{
+  position:relative;
+  background:#060912;
+  border:1px solid rgba(0,224,255,0.12);
+  border-radius:var(--radius-sm);
+  margin:1rem 0;
+  overflow:hidden;
+}
+.code-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0.5rem 1rem;
+  background:rgba(0,224,255,0.04);
+  border-bottom:1px solid rgba(0,224,255,0.08);
+}
+.code-lang{
+  font-family:var(--font-mono);font-size:0.65rem;letter-spacing:0.1em;
+  text-transform:uppercase;color:var(--cyan2);
+}
+.copy-btn{
+  display:flex;align-items:center;gap:0.35rem;
+  background:rgba(0,224,255,0.08);border:1px solid rgba(0,224,255,0.2);
+  color:var(--text-muted);font-family:var(--font-mono);font-size:0.7rem;
+  padding:3px 10px;border-radius:6px;cursor:pointer;
+  transition:all 0.2s;
+}
+.copy-btn:hover{color:var(--cyan);border-color:rgba(0,224,255,0.4);background:rgba(0,224,255,0.12)}
+.copy-btn.copied{color:#4ade80;border-color:rgba(74,222,128,0.4);background:rgba(74,222,128,0.08)}
+.code-block pre{
+  padding:1.25rem;
+  overflow-x:auto;
+  font-family:var(--font-mono);font-size:0.8rem;line-height:1.7;
+  color:#a8d8ea;
+}
+.code-block pre .k{color:#c792ea}
+.code-block pre .s{color:#c3e88d}
+.code-block pre .c{color:#546e7a}
+.code-block pre .n{color:var(--cyan)}
+.code-block pre .v{color:#f78c6c}
+
+/* ── BANNERS ── */
+.banner{
+  display:flex;gap:1rem;align-items:flex-start;
+  border-radius:var(--radius-sm);
+  padding:1rem 1.25rem;margin:1.25rem 0;
+  font-size:0.875rem;
+  border-left:3px solid;
+}
+.banner-icon{font-size:1.1rem;flex-shrink:0;margin-top:0.05rem}
+.banner-body strong{display:block;margin-bottom:0.2rem;font-size:0.875rem}
+.banner-body p{font-size:0.825rem;margin:0;line-height:1.6}
+.banner.danger{
+  background:rgba(239,68,68,0.08);border-color:#ef4444;
+}
+.banner.danger .banner-icon{color:#ef4444}
+.banner.danger strong{color:#fca5a5}
+.banner.warning{
+  background:rgba(234,179,8,0.08);border-color:#eab308;
+}
+.banner.warning .banner-icon{color:#eab308}
+.banner.warning strong{color:#fde047}
+.banner.info{
+  background:rgba(0,224,255,0.06);border-color:var(--cyan);
+}
+.banner.info .banner-icon{color:var(--cyan)}
+.banner.info strong{color:var(--cyan)}
+.banner.success{
+  background:rgba(74,222,128,0.06);border-color:#4ade80;
+}
+.banner.success .banner-icon{color:#4ade80}
+.banner.success strong{color:#86efac}
+
+/* ── FOLDER TREE ── */
+.folder-tree{
+  background:#060912;
+  border:1px solid rgba(0,224,255,0.12);
+  border-radius:var(--radius-sm);
+  padding:1.25rem 1.5rem;
+  font-family:var(--font-mono);font-size:0.8rem;
+  line-height:2;
+  margin:1.25rem 0;
+}
+.ft-dir{color:var(--cyan)}
+.ft-file{color:#a8d8ea}
+.ft-comment{color:#546e7a}
+.ft-indent{padding-left:1.2rem}
+.ft-indent2{padding-left:2.4rem}
+.ft-indent3{padding-left:3.6rem}
+
+/* ── TABLE ── */
+.doc-table{
+  width:100%;border-collapse:collapse;
+  margin:1.25rem 0;font-size:0.85rem;
+}
+.doc-table th{
+  text-align:left;
+  font-family:var(--font-mono);font-size:0.7rem;letter-spacing:0.1em;text-transform:uppercase;
+  color:var(--text-dim);
+  padding:0.6rem 1rem;
+  border-bottom:1px solid rgba(0,224,255,0.1);
+  background:rgba(0,224,255,0.03);
+}
+.doc-table td{
+  padding:0.7rem 1rem;
+  border-bottom:1px solid rgba(255,255,255,0.04);
+  color:var(--text-muted);vertical-align:top;
+}
+.doc-table tr:last-child td{border-bottom:none}
+.doc-table tr:hover td{background:rgba(0,224,255,0.02)}
+.doc-table code{
+  font-family:var(--font-mono);font-size:0.78rem;
+  background:rgba(0,224,255,0.08);color:var(--cyan2);
+  padding:1px 6px;border-radius:4px;
+}
+.doc-table td strong{color:var(--text)}
+
+/* ── INLINE CODE ── */
+code:not(.code-block code){
+  font-family:var(--font-mono);font-size:0.82em;
+  background:rgba(0,224,255,0.08);color:var(--cyan2);
+  padding:2px 7px;border-radius:5px;
+}
+
+/* ── LISTS ── */
+ul.doc-list,ol.doc-list{
+  padding-left:1.5rem;color:var(--text-muted);
+  margin-bottom:1rem;
+}
+ul.doc-list li,ol.doc-list li{margin-bottom:0.35rem;font-size:0.9rem}
+ul.doc-list li::marker{color:var(--cyan);opacity:0.6}
+
+/* ── CHECKLIST ── */
+.checklist{list-style:none;padding:0;margin:1rem 0}
+.checklist li{
+  display:flex;align-items:flex-start;gap:0.6rem;
+  padding:0.4rem 0;font-size:0.875rem;color:var(--text-muted);
+}
+.checklist li::before{
+  content:'✓';color:#4ade80;font-weight:700;
+  margin-top:0.05rem;flex-shrink:0;
+}
+
+/* ── PILL / TAG ── */
+.pill{
+  display:inline-flex;align-items:center;
+  font-family:var(--font-mono);font-size:0.7rem;letter-spacing:0.07em;
+  padding:3px 10px;border-radius:99px;font-weight:500;
+}
+.pill-cyan{background:rgba(0,224,255,0.1);color:var(--cyan);border:1px solid rgba(0,224,255,0.25)}
+.pill-green{background:rgba(74,222,128,0.1);color:#4ade80;border:1px solid rgba(74,222,128,0.25)}
+.pill-red{background:rgba(239,68,68,0.1);color:#f87171;border:1px solid rgba(239,68,68,0.25)}
+
+/* ── DIVIDER ── */
+.divider{
+  border:none;
+  border-top:1px solid rgba(0,224,255,0.07);
+  margin:2rem 0;
+}
+
+/* ── FOOTER ── */
+.footer{
+  margin-left:var(--sidebar-w);
+  padding:2rem 4rem 2rem 3.5rem;
+  border-top:1px solid rgba(0,224,255,0.08);
+  display:flex;align-items:center;justify-content:space-between;
+  flex-wrap:wrap;gap:1rem;
+  font-family:var(--font-mono);font-size:0.75rem;color:var(--text-dim);
+  position:relative;z-index:1;
+}
+.footer-brand{color:var(--cyan);font-weight:500}
+
+/* ── RESPONSIVE ── */
+@media(max-width:900px){
+  .hamburger{display:flex}
+  .sidebar{transform:translateX(-100%)}
+  .sidebar.open{transform:translateX(0)}
+  .main{margin-left:0;max-width:100%;padding:2rem 1.25rem 4rem}
+  .footer{margin-left:0;padding:1.5rem 1.25rem}
+  .feature-grid{grid-template-columns:1fr 1fr}
+}
+
+@media(max-width:600px){
+  .feature-grid{grid-template-columns:1fr}
+  .hero h1{font-size:1.8rem}
+  .code-block pre{font-size:0.72rem}
+  .doc-table{font-size:0.78rem}
+  .doc-table th,.doc-table td{padding:0.5rem 0.6rem}
+}
+
+/* ── SCROLL GLOW ── */
+.section-anchor::before{
+  content:'';display:block;height:80px;margin-top:-80px;
+}
+
+/* ── HIGHLIGHT ── */
+mark{background:rgba(0,224,255,0.15);color:var(--cyan);padding:0 4px;border-radius:3px}
+
+/* ── PROGRESS BAR ── */
+#progress{
+  position:fixed;top:0;left:0;height:2px;
+  background:linear-gradient(90deg,var(--cyan),var(--blue));
+  z-index:200;width:0%;transition:width 0.1s linear;
+}
+</style>
+</head>
+<body>
+
+<div id="progress"></div>
+
+<!-- ═══════════════ HEADER ═══════════════ -->
+<header class="header">
+  <a href="#introduction" class="header-logo">
+    <div class="logo-icon">⚡</div>
+    LinkVault
+  </a>
+  <span class="header-badge">v1.0 Docs</span>
+  <div class="header-spacer"></div>
+  <button class="hamburger" id="hamburgerBtn" aria-label="Toggle navigation">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+      <line x1="3" y1="6" x2="21" y2="6"/>
+      <line x1="3" y1="12" x2="21" y2="12"/>
+      <line x1="3" y1="18" x2="21" y2="18"/>
+    </svg>
+  </button>
+</header>
+
+<!-- ═══════════════ SIDEBAR OVERLAY ═══════════════ -->
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<!-- ═══════════════ LAYOUT ═══════════════ -->
+<div class="layout">
+
+<!-- ═══════════════ SIDEBAR ═══════════════ -->
+<nav class="sidebar" id="sidebar">
+  <div class="sidebar-label">Getting Started</div>
+  <a href="#introduction" class="nav-link active"><span class="nav-icon">🏠</span> Introduction</a>
+  <a href="#folder-structure" class="nav-link"><span class="nav-icon">📁</span> Folder Structure</a>
+  <a href="#quick-setup" class="nav-link"><span class="nav-icon">⚡</span> Quick Setup</a>
+
+  <div class="sidebar-label">Configuration</div>
+  <a href="#ad-network" class="nav-link"><span class="nav-icon">💰</span> Ad Network Setup</a>
+  <a href="#translations" class="nav-link"><span class="nav-icon">🌐</span> Translations & Language</a>
+  <a href="#pwa-sitemap" class="nav-link"><span class="nav-icon">📱</span> PWA & Sitemap</a>
+
+  <div class="sidebar-label">Deployment</div>
+  <a href="#security" class="nav-link"><span class="nav-icon">🛡️</span> Security Notes</a>
+  <a href="#admin-mode" class="nav-link"><span class="nav-icon">🔑</span> Admin Mode</a>
+  <a href="#seo" class="nav-link"><span class="nav-icon">🔍</span> SEO & Meta Tags</a>
+
+  <div class="sidebar-label">Support</div>
+  <a href="#support" class="nav-link"><span class="nav-icon">💬</span> Support & Credits</a>
+</nav>
+
+<!-- ═══════════════ MAIN ═══════════════ -->
+<main class="main">
+
+<!-- ─────────────── INTRODUCTION ─────────────── -->
+<section class="section" id="introduction">
+  <div class="hero">
+    <div class="hero-tag">Official Documentation</div>
+    <h1>Welcome to <span>LinkVault</span></h1>
+    <p class="hero-sub">
+      Your premium link-locking and monetization platform. Lock any URL behind a smart ad gateway and earn revenue from every single visitor — automatically, with <strong>zero coding required</strong>.
+    </p>
+    <div class="hero-meta">
+      <span class="hero-meta-item"><span>✦</span> Author: MD KAWSER</span>
+      <span class="hero-meta-item"><span>✦</span> Version: 1.0</span>
+      <span class="hero-meta-item"><span>✦</span> Pure HTML / CSS / JS</span>
+      <span class="hero-meta-item"><span>✦</span> Zero Dependencies</span>
+    </div>
+  </div>
+
+  <h2>What is LinkVault?</h2>
+  <p>
+    LinkVault is a <strong>self-hosted, premium link monetization tool</strong>. It allows you to place any target URL (a download link, a referral link, a file, or any webpage) behind a countdown timer with integrated ads. Visitors must wait out the timer — during which your ads run — before they can access the destination. This turns your existing traffic into a predictable ad revenue stream.
+  </p>
+  <p>
+    The project is architected to be <strong>entirely configuration-driven</strong>. You never need to touch the core source code. All customization is done through the visual <strong>Admin Tool</strong> (included), which generates the config files for you.
+  </p>
+
+  <h2 style="margin-top:2rem">Core Features</h2>
+  <div class="feature-grid">
+    <div class="feature-card">
+      <div class="feature-icon">🛡️</div>
+      <h3>Anti-Adblock Detection</h3>
+      <p>Detects ad blockers in real-time and prevents users from bypassing your ads, protecting your revenue.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">⏱️</div>
+      <h3>Smart Countdown Timer</h3>
+      <p>A fully configurable countdown timer keeps visitors engaged with your ads before they reach the destination.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">📦</div>
+      <h3>Zero Dependencies</h3>
+      <p>No React, no Vue, no npm install. Pure HTML, CSS, and vanilla JavaScript. Deploy anywhere, instantly.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">📱</div>
+      <h3>PWA Ready</h3>
+      <p>Includes a full Web App Manifest and Service Worker so visitors can install LinkVault as a native-like app.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🗺️</div>
+      <h3>Node.js Sitemap Generator</h3>
+      <p>A single command generates a complete <code>sitemap.xml</code> for Google Search Console submission.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🌐</div>
+      <h3>Full Internationalization</h3>
+      <p>Translate the entire UI into any language by swapping a single <code>lang.js</code> file. No code changes.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">⚡</div>
+      <h3>Admin-Only Mode</h3>
+      <p>Visit your live site with <code>?admin=true</code> to hide all ads and disable analytics — safe for QA testing.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🎨</div>
+      <h3>Visual Admin Tool</h3>
+      <p>Bundled admin panel lets you configure everything and auto-generate config files. No coding required.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────── FOLDER STRUCTURE ─────────────── -->
+<section class="section" id="folder-structure">
+  <h2>📁 Folder Structure</h2>
+  <p>
+    LinkVault uses a clean, modular file structure. Each folder has a single responsibility, making the project easy to navigate even for beginners.
+  </p>
+
+  <div class="folder-tree">
+<span class="ft-dir">linkvault/</span>                         <span class="ft-comment">← Your project root</span>
+│
+├── <span class="ft-dir">admin/</span>                         <span class="ft-comment">← Visual config generator (DELETE before going live!)</span>
+│   └── <span class="ft-file">index.html</span>               <span class="ft-comment">← Open this in your browser to configure</span>
+│
+├── <span class="ft-dir">assets/</span>                        <span class="ft-comment">← All static assets</span>
+│   ├── <span class="ft-dir">css/</span>
+│   │   └── <span class="ft-file">style.css</span>            <span class="ft-comment">← Main stylesheet (do not edit)</span>
+│   ├── <span class="ft-dir">img/</span>                       <span class="ft-comment">← Images, icons, og-cover</span>
+│   └── <span class="ft-dir">js/</span>
+│       ├── <span class="ft-file">ads.js</span>               <span class="ft-comment">← ⭐ Your ad network code goes here (auto-generated)</span>
+│       ├── <span class="ft-file">lang.js</span>              <span class="ft-comment">← ⭐ UI translations (swap to change language)</span>
+│       ├── <span class="ft-file">script.js</span>            <span class="ft-comment">← Core app logic (do not edit)</span>
+│       └── <span class="ft-file">site-config.js</span>       <span class="ft-comment">← ⭐ Main site config (auto-generated by Admin Tool)</span>
+│
+├── <span class="ft-dir">web-app/</span>                       <span class="ft-comment">← PWA files</span>
+│   ├── <span class="ft-file">manifest.json</span>            <span class="ft-comment">← Web App Manifest (customize your app name/icons)</span>
+│   └── <span class="ft-file">sw.js</span>                    <span class="ft-comment">← Service Worker (requires HTTPS server header)</span>
+│
+├── <span class="ft-file">generate-sitemap.js</span>          <span class="ft-comment">← Node.js sitemap generator script</span>
+├── <span class="ft-file">index.html</span>                   <span class="ft-comment">← Main entry point (homepage)</span>
+├── <span class="ft-file">locked.html</span>                  <span class="ft-comment">← The link-lock / countdown page</span>
+└── <span class="ft-file">README.md</span>                    <span class="ft-comment">← Quick reference</span>
+  </div>
+
+  <h3>The Three Key Files You Will Work With</h3>
+  <p>As a buyer, you only need to interact with <strong>three files</strong>. All of them are auto-generated by the Admin Tool:</p>
+
+  <table class="doc-table">
+    <thead>
+      <tr>
+        <th>File</th>
+        <th>Purpose</th>
+        <th>How to Edit</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>assets/js/site-config.js</code></td>
+        <td><strong>All site settings</strong> — site name, domain, timer duration, Google Analytics ID, etc.</td>
+        <td>Use the Admin Tool (no coding)</td>
+      </tr>
+      <tr>
+        <td><code>assets/js/ads.js</code></td>
+        <td><strong>Your ad network codes</strong> — banner, popunder, native ads from Adsterra, PropellerAds, etc.</td>
+        <td>Use the Admin Tool (paste your ad codes)</td>
+      </tr>
+      <tr>
+        <td><code>assets/js/lang.js</code></td>
+        <td><strong>All UI text strings</strong> — every word visible to the visitor, fully translatable.</td>
+        <td>Edit text values directly in any text editor</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ─────────────── QUICK SETUP ─────────────── -->
+<section class="section" id="quick-setup">
+  <h2>⚡ Quick Setup — The Admin Tool</h2>
+  <p>
+    This is the most important section. The Admin Tool is a <strong>visual interface</strong> included in the <code>/admin/</code> folder. It lets you configure <em>everything</em> about your site and auto-generate the config files — <strong>no coding or text editor required</strong>.
+  </p>
+
+  <div class="banner info">
+    <span class="banner-icon">💡</span>
+    <div class="banner-body">
+      <strong>No Coding Required</strong>
+      <p>The Admin Tool is a self-contained HTML file. Simply open it in any modern browser (Chrome, Firefox, Edge) directly from your computer. You do not need a server to run it.</p>
+    </div>
+  </div>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <h3>Open the Admin Tool</h3>
+        <p>Navigate to the <code>admin/</code> folder inside your downloaded project. Double-click <strong><code>index.html</code></strong> to open it in your browser. You will see a beautiful dashboard with a multi-step configuration form.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <h3>Fill in Your Site Settings</h3>
+        <p>
+          Complete the <strong>Site Configuration</strong> form with your details:
+        </p>
+        <ul class="doc-list">
+          <li><strong>Site Name</strong> — e.g. <code>LinkVault</code> or your own brand name</li>
+          <li><strong>Site URL</strong> — your live domain, e.g. <code>https://yourdomain.com</code></li>
+          <li><strong>Google Analytics ID</strong> — e.g. <code>G-XXXXXXXXXX</code> (get this from <a href="https://analytics.google.com" target="_blank">analytics.google.com</a>)</li>
+          <li><strong>Countdown Timer Duration</strong> — in seconds (default: 15–30 seconds recommended)</li>
+          <li><strong>Default Destination URL</strong> — the URL visitors are sent to after the timer</li>
+        </ul>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <h3>Paste Your Ad Codes</h3>
+        <p>In the <strong>Ad Configuration</strong> section of the Admin Tool, paste your ad network scripts (from Adsterra, PropellerAds, etc.) into the appropriate slots — Banner Ad, Popunder, Native Widget, etc. See the <a href="#ad-network">Ad Network Setup</a> section for where to get these codes.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <h3>Click "Generate Files"</h3>
+        <p>Once all fields are filled, click the <strong>Generate Config Files</strong> button. The Admin Tool will produce two downloadable files: <code>site-config.js</code> and <code>ads.js</code>.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">5</div>
+      <div class="step-body">
+        <h3>Replace the Default Files</h3>
+        <p>Take the two downloaded files and replace the existing placeholder files in your project:</p>
+        <ul class="doc-list">
+          <li>Replace <code>assets/js/site-config.js</code> with your new <code>site-config.js</code></li>
+          <li>Replace <code>assets/js/ads.js</code> with your new <code>ads.js</code></li>
+        </ul>
+        <p>That's it — your site is now fully configured and ready to upload.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">6</div>
+      <div class="step-body">
+        <h3>Upload to Your Web Host</h3>
+        <p>Upload <strong>all project files</strong> (except the <code>admin/</code> folder) to your web hosting via FTP, cPanel File Manager, or your preferred method. The project works on <strong>any standard web host</strong> — shared hosting, VPS, Netlify, Vercel, GitHub Pages, etc.</p>
+        <div class="banner warning" style="margin-top:0.75rem">
+          <span class="banner-icon">⚠️</span>
+          <div class="banner-body">
+            <strong>Delete the /admin/ Folder Before Going Live</strong>
+            <p>The admin folder exposes your configuration interface to the public internet. See the <a href="#security">Security Notes</a> section.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <h3 style="margin-top:2rem">Locking a Link (How It Works)</h3>
+  <p>
+    To monetize a specific link, you direct your audience to <code>locked.html</code> with the target URL as a query parameter:
+  </p>
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-lang">URL Format</span>
+      <button class="copy-btn" onclick="copyCode(this)">⎘ Copy</button>
+    </div>
+    <pre>https://yourdomain.com/locked.html?url=https://example.com/your-target-link</pre>
+  </div>
+  <p>Visitors who click this link will see the countdown timer and ads. Once the timer expires, they are automatically redirected to <code>https://example.com/your-target-link</code>. You earn ad revenue from every visit.</p>
+</section>
+
+<!-- ─────────────── AD NETWORK SETUP ─────────────── -->
+<section class="section" id="ad-network">
+  <h2>💰 Ad Network Setup</h2>
+  <p>
+    LinkVault is designed to work with <strong>any ad network</strong> that provides a JavaScript snippet. Below are the recommended networks for maximum revenue with link-locking sites.
+  </p>
+
+  <h3>Recommended Ad Networks</h3>
+  <table class="doc-table">
+    <thead>
+      <tr>
+        <th>Network</th>
+        <th>Best For</th>
+        <th>Ad Types</th>
+        <th>Sign Up</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Adsterra</strong></td>
+        <td>High CPM globally, easy approval</td>
+        <td>Banner, Popunder, Native, Interstitial</td>
+        <td><code>adsterra.com</code></td>
+      </tr>
+      <tr>
+        <td><strong>PropellerAds</strong></td>
+        <td>Popunder & push monetization</td>
+        <td>Popunder, Push, Native Banner</td>
+        <td><code>propellerads.com</code></td>
+      </tr>
+      <tr>
+        <td><strong>HilltopAds</strong></td>
+        <td>High-traffic, various niches</td>
+        <td>Popunder, Banner, In-Page Push</td>
+        <td><code>hilltopads.net</code></td>
+      </tr>
+      <tr>
+        <td><strong>Google AdSense</strong></td>
+        <td>Mainstream content, high trust</td>
+        <td>Display, In-feed</td>
+        <td><code>adsense.google.com</code></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>Step-by-Step: Getting Your Ad Code</h3>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <h3>Create an Account & Add Your Site</h3>
+        <p>Register on your chosen ad network and add your domain (e.g. <code>yourdomain.com</code>) as a publisher property. Most networks will ask you to verify ownership by uploading a file or adding a meta tag — follow their specific instructions.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <h3>Create an Ad Zone / Unit</h3>
+        <p>Inside the ad network dashboard, create a new <strong>Ad Zone</strong> (Adsterra terminology) or <strong>Ad Unit</strong>. Choose the ad type you want (e.g. "Banner 728x90" or "Social Bar" or "Popunder"). Set the size and targeting options they offer.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <h3>Copy the JavaScript Snippet</h3>
+        <p>Once the ad unit is created, the network will provide you a <code>&lt;script&gt;</code> tag. It will look something like this:</p>
+        <div class="code-block">
+          <div class="code-header">
+            <span class="code-lang">Example Ad Snippet (Adsterra)</span>
+            <button class="copy-btn" onclick="copyCode(this)">⎘ Copy</button>
+          </div>
+          <pre>&lt;script type="text/javascript"&gt;
+  atOptions = {
+    'key' : 'your_unique_ad_key_here',
+    'format' : 'iframe',
+    'height' : 90,
+    'width' : 728,
+    'params' : {}
+  };
+&lt;/script&gt;
+&lt;script type="text/javascript"
+  src="//www.highperformanceformat.com/your_key/invoke.js"&gt;
+&lt;/script&gt;</pre>
+        </div>
+        <p>Copy this entire snippet from the ad network.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <h3>Paste into the Admin Tool</h3>
+        <p>Open the <code>admin/index.html</code> file, find the <strong>Ad Configuration</strong> section, and paste your snippet into the correct slot (Banner, Popunder, etc.). The Admin Tool will wrap it properly inside <code>ads.js</code> when you generate the files.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="banner success">
+    <span class="banner-icon">✅</span>
+    <div class="banner-body">
+      <strong>Anti-Adblock is Built In</strong>
+      <p>LinkVault includes built-in ad blocker detection. If a visitor has an adblocker active, the site will detect it and display a message asking them to disable it before proceeding. This protects your revenue automatically.</p>
+    </div>
+  </div>
+
+  <div class="banner info">
+    <span class="banner-icon">🛡️</span>
+    <div class="banner-body">
+      <strong>Admin Mode Hides All Ads</strong>
+      <p>When you or the site owner are browsing using Admin Mode, all ad zones are hidden and all analytics tracking is disabled. This protects your ad account from accidental self-clicks. See the <a href="#admin-mode">Admin Mode</a> section for details.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────── TRANSLATIONS ─────────────── -->
+<section class="section" id="translations">
+  <h2>🌐 Translations & Language</h2>
+  <p>
+    The entire user-facing text of LinkVault is stored in a single file: <code>assets/js/lang.js</code>. Translating the app into <strong>any language</strong> is as simple as editing this one file.
+  </p>
+
+  <h3>How the Translation System Works</h3>
+  <p>
+    The <code>lang.js</code> file exports a JavaScript object where each key corresponds to a UI element (e.g. <code>page_title_index</code>, <code>btn_get_link</code>). <code>script.js</code> reads this object on page load and populates all text elements. You never edit the HTML files.
+  </p>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-lang">assets/js/lang.js — Example Structure</span>
+      <button class="copy-btn" onclick="copyCode(this)">⎘ Copy</button>
+    </div>
+    <pre>// ══ LinkVault Language File ══
+// To translate: change the VALUES (right side of the colon).
+// Do NOT change the KEYS (left side) — they are used by the app.
+
+window.LV_LANG = {
+
+  // ── Page Titles ──
+  page_title_index  : "LinkVault — Monetize Every Click",
+  page_title_locked : "Get Your Link — LinkVault",
+
+  // ── Homepage ──
+  hero_headline     : "Monetize Every Click",
+  hero_sub          : "Lock your links. Earn from every visit.",
+  btn_get_link      : "Get Link",
+  placeholder_url   : "Paste your destination URL here...",
+
+  // ── Countdown Page ──
+  countdown_heading : "Your link is being prepared",
+  countdown_note    : "Please wait while ads load. Thank you for your support!",
+  btn_skip          : "Skip Ad",
+  btn_open_link     : "Open My Link →",
+
+  // ── Adblock Warning ──
+  adblock_title     : "Ad Blocker Detected",
+  adblock_message   : "Please disable your ad blocker to continue.",
+
+  // ... (many more keys inside the file)
+
+};</pre>
+  </div>
+
+  <h3>How to Translate (Step-by-Step)</h3>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <h3>Duplicate the File</h3>
+        <p>Make a copy of <code>assets/js/lang.js</code> and rename it to include your language code, for example: <code>lang.es.js</code> for Spanish, <code>lang.fr.js</code> for French, <code>lang.ar.js</code> for Arabic.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <h3>Edit the Values</h3>
+        <p>Open your new file in any text editor (Notepad, VS Code, etc.). Translate only the <strong>values</strong> (the text inside the quotes on the right side of the colon). <strong>Never change the keys</strong> (the words on the left side).</p>
+        <div class="code-block">
+          <div class="code-header">
+            <span class="code-lang">Example — Spanish Translation</span>
+            <button class="copy-btn" onclick="copyCode(this)">⎘ Copy</button>
+          </div>
+          <pre><span class="c">// BEFORE (English):</span>
+hero_headline : <span class="s">"Monetize Every Click"</span>,
+
+<span class="c">// AFTER (Spanish):</span>
+hero_headline : <span class="s">"Monetiza Cada Clic"</span>,</pre>
+        </div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <h3>Update the Script Tag in index.html and locked.html</h3>
+        <p>Open both <code>index.html</code> and <code>locked.html</code>. Find this line near the top and change the filename to your translated file:</p>
+        <div class="code-block">
+          <div class="code-header">
+            <span class="code-lang">HTML — Change Language File</span>
+            <button class="copy-btn" onclick="copyCode(this)">⎘ Copy</button>
+          </div>
+          <pre><span class="c">&lt;!-- BEFORE --&gt;</span>
+&lt;script src="assets/js/<span class="n">lang.js</span>"&gt;&lt;/script&gt;
+
+<span class="c">&lt;!-- AFTER (Spanish) --&gt;</span>
+&lt;script src="assets/js/<span class="n">lang.es.js</span>"&gt;&lt;/script&gt;</pre>
+        </div>
+        <p>The entire UI will now display in your chosen language. No other changes needed.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="banner info">
+    <span class="banner-icon">📌</span>
+    <div class="banner-body">
+      <strong>Right-to-Left (RTL) Languages</strong>
+      <p>For Arabic, Hebrew, Urdu, or other RTL languages, add <code>dir="rtl"</code> to the <code>&lt;html&gt;</code> tag in <code>index.html</code> and <code>locked.html</code>. The stylesheet already includes RTL-safe layouts.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────── PWA & SITEMAP ─────────────── -->
+<section class="section" id="pwa-sitemap">
+  <h2>📱 PWA & Sitemap</h2>
+
+  <h3>Progressive Web App (PWA)</h3>
+  <p>
+    LinkVault is fully PWA-ready. This means visitors can add your site to their phone's home screen and use it like a native app — with a custom icon, splash screen, and offline support.
+  </p>
+
+  <h4>Step 1 — Edit manifest.json</h4>
+  <p>Open <code>web-app/manifest.json</code> and update the following fields to match your brand:</p>
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-lang">web-app/manifest.json</span>
+      <button class="copy-btn" onclick="copyCode(this)">⎘ Copy</button>
+    </div>
+    <pre>{
+  <span class="k">"name"</span>:             <span class="s">"Your Site Name"</span>,
+  <span class="k">"short_name"</span>:       <span class="s">"ShortName"</span>,
+  <span class="k">"description"</span>:      <span class="s">"Lock your links and earn from every visit."</span>,
+  <span class="k">"start_url"</span>:        <span class="s">"/"</span>,
+  <span class="k">"scope"</span>:            <span class="s">"/"</span>,
+  <span class="k">"display"</span>:          <span class="s">"standalone"</span>,
+  <span class="k">"theme_color"</span>:      <span class="s">"#080c14"</span>,
+  <span class="k">"background_color"</span>: <span class="s">"#080c14"</span>,
+  <span class="k">"icons"</span>: [
+    {
+      <span class="k">"src"</span>:   <span class="s">"../assets/img/icon-192.webp"</span>,
+      <span class="k">"sizes"</span>: <span class="s">"192x192"</span>,
+      <span class="k">"type"</span>:  <span class="s">"image/webp"</span>
+    },
+    {
+      <span class="k">"src"</span>:   <span class="s">"../assets/img/icon-512.webp"</span>,
+      <span class="k">"sizes"</span>: <span class="s">"512x512"</span>,
+      <span class="k">"type"</span>:  <span class="s">"image/webp"</span>
+    }
+  ]
+}</pre>
+  </div>
+
+  <table class="doc-table">
+    <thead><tr><th>Field</th><th>What to Put</th></tr></thead>
+    <tbody>
+      <tr><td><code>name</code></td><td>Your full site name shown on splash screen</td></tr>
+      <tr><td><code>short_name</code></td><td>Short name for the home screen icon label (max ~12 chars)</td></tr>
+      <tr><td><code>description</code></td><td>A one-line description of your site</td></tr>
+      <tr><td><code>theme_color</code></td><td>Browser toolbar color — keep as <code>#080c14</code> or change to your brand color</td></tr>
+      <tr><td><code>icons</code></td><td>Replace the icon files with your own logo at 192×192 and 512×512 pixels</td></tr>
+    </tbody>
+  </table>
+
+  <h4 style="margin-top:1.5rem">Step 2 — Service Worker (HTTPS Required)</h4>
+  <p>
+    The Service Worker file (<code>web-app/sw.js</code>) enables offline caching and is what makes the site installable. It <strong>only activates on HTTPS</strong>. Make sure your web host provides an SSL certificate (all major hosts include free SSL via Let's Encrypt).
+  </p>
+  <div class="banner warning">
+    <span class="banner-icon">⚠️</span>
+    <div class="banner-body">
+      <strong>HTTPS is Required for PWA Features</strong>
+      <p>The Service Worker (sw.js) will not register on plain <code>http://</code> connections. Ensure your hosting has SSL enabled. This is free on virtually all modern hosts (Hostinger, Namecheap, Netlify, Vercel, etc.).</p>
+    </div>
+  </div>
+
+  <hr class="divider"/>
+
+  <h3>Sitemap Generator</h3>
+  <p>
+    The included <code>generate-sitemap.js</code> script automatically scans your project for all HTML files and creates a complete <code>sitemap.xml</code> — ready to submit to Google Search Console.
+  </p>
+
+  <div class="banner info">
+    <span class="banner-icon">📋</span>
+    <div class="banner-body">
+      <strong>Prerequisite: Node.js</strong>
+      <p>You need Node.js installed on your computer to run this script. Download it free from <a href="https://nodejs.org" target="_blank">nodejs.org</a>. Any version 14+ works. This is a one-time local task — Node.js does NOT need to be on your server.</p>
+    </div>
+  </div>
+
+  <h4>Step 1 — Configure the Script</h4>
+  <p>Open <code>generate-sitemap.js</code> in a text editor and update the <code>CONFIG</code> block at the top of the file:</p>
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-lang">generate-sitemap.js — CONFIG Block</span>
+      <button class="copy-btn" onclick="copyCode(this)">⎘ Copy</button>
+    </div>
+    <pre><span class="k">var</span> CONFIG = {
+  <span class="c">/* ★ Change this to your live domain */</span>
+  SITE_URL:           <span class="s">'https://yourdomain.com'</span>,
+
+  <span class="c">/* Root directory of your project (leave as '.' if running from root) */</span>
+  ROOT_DIR:           <span class="s">'.'</span>,
+
+  <span class="c">/* Output filename */</span>
+  OUTPUT_FILE:        <span class="s">'sitemap.xml'</span>,
+
+  <span class="c">/* Folders to skip (admin is excluded for security) */</span>
+  EXCLUDE_PATHS:      [<span class="s">'admin'</span>, <span class="s">'node_modules'</span>],
+
+  <span class="c">/* Default values for all pages */</span>
+  DEFAULT_CHANGEFREQ: <span class="s">'weekly'</span>,
+  DEFAULT_PRIORITY:   <span class="s">'0.7'</span>,
+  HOMEPAGE_PRIORITY:  <span class="s">'1.0'</span>,
+};</pre>
+  </div>
+
+  <h4>Step 2 — Run the Script</h4>
+  <p>Open your terminal (Command Prompt, PowerShell, or Terminal on Mac/Linux), navigate to your project folder, and run:</p>
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-lang">Terminal</span>
+      <button class="copy-btn" onclick="copyCode(this)">⎘ Copy</button>
+    </div>
+    <pre><span class="c"># Navigate to your project folder</span>
+cd path/to/linkvault
+
+<span class="c"># Run the sitemap generator</span>
+node generate-sitemap.js</pre>
+  </div>
+  <p>A <code>sitemap.xml</code> file will be created in your project root. You will see a success message confirming how many pages were found.</p>
+
+  <h4>Step 3 — Submit to Google Search Console</h4>
+  <ol class="doc-list">
+    <li>Upload <code>sitemap.xml</code> to your live website root (e.g. <code>https://yourdomain.com/sitemap.xml</code>).</li>
+    <li>Go to <a href="https://search.google.com/search-console" target="_blank">search.google.com/search-console</a> and add your property.</li>
+    <li>Click <strong>Sitemaps</strong> in the left menu, enter <code>sitemap.xml</code>, and click <strong>Submit</strong>.</li>
+    <li>Google will begin crawling and indexing your pages.</li>
+  </ol>
+</section>
+
+<!-- ─────────────── SECURITY ─────────────── -->
+<section class="section" id="security">
+  <h2>🛡️ Security Notes</h2>
+
+  <div class="banner danger">
+    <span class="banner-icon">🚨</span>
+    <div class="banner-body">
+      <strong>CRITICAL: Delete the /admin/ Folder Before Going Live</strong>
+      <p>The <code>/admin/</code> folder contains a tool that generates your configuration files. If left publicly accessible on your live server, anyone who finds it can view and overwrite your site settings. <strong>This is a serious security risk.</strong></p>
+    </div>
+  </div>
+
+  <h3>Option A — Delete the Folder (Recommended)</h3>
+  <p>The simplest and safest option. After you have generated your <code>site-config.js</code> and <code>ads.js</code> files, simply <strong>delete the entire <code>admin/</code> folder</strong> before uploading your project to the server. Keep a local backup on your computer.</p>
+
+  <h3>Option B — Password Protect with .htaccess</h3>
+  <p>If you want to keep the admin panel accessible on your server for future edits, protect it with a server-level password. This requires Apache hosting (cPanel, Hostinger, etc.):</p>
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-lang">admin/.htaccess — Basic Auth Protection</span>
+      <button class="copy-btn" onclick="copyCode(this)">⎘ Copy</button>
+    </div>
+    <pre>AuthType Basic
+AuthName "Admin Area — Restricted"
+AuthUserFile /home/yourusername/public_html/admin/.htpasswd
+Require valid-user</pre>
+  </div>
+  <p>Create an <code>.htpasswd</code> file using an <a href="https://www.web2generators.com/apache-tools/htpasswd-generator" target="_blank">online .htpasswd generator</a> and place it in the same <code>admin/</code> folder.</p>
+
+  <h3>Option C — Block via Nginx Config</h3>
+  <p>On Nginx servers (VPS, DigitalOcean, etc.), add this to your server block:</p>
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-lang">nginx.conf</span>
+      <button class="copy-btn" onclick="copyCode(this)">⎘ Copy</button>
+    </div>
+    <pre>location /admin/ {
+    deny all;
+    return 403;
+}</pre>
+  </div>
+
+  <h3>General Security Checklist</h3>
+  <ul class="checklist">
+    <li>Delete or protect the <code>/admin/</code> folder before going live.</li>
+    <li>Use HTTPS (SSL) — required for PWA, boosts SEO, encrypts visitor data.</li>
+    <li>Keep your Google Analytics ID private — do not share it publicly.</li>
+    <li>Regularly update your ad network code when your provider sends new snippets.</li>
+    <li>Do not commit <code>ads.js</code> or <code>site-config.js</code> to public GitHub repositories.</li>
+  </ul>
+</section>
+
+<!-- ─────────────── ADMIN MODE ─────────────── -->
+<section class="section" id="admin-mode">
+  <h2>🔑 Admin Mode (Owner Testing)</h2>
+  <p>
+    LinkVault includes a built-in <strong>Admin Mode</strong> that allows you (the site owner) to browse your live site safely — without triggering your own analytics or accidentally clicking your own ads. This protects your Google Analytics data and your ad network account from self-click violations.
+  </p>
+
+  <h3>Activating Admin Mode</h3>
+  <p>Visit your live site with the <code>?admin=true</code> query parameter appended to the URL:</p>
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-lang">Activate Admin Mode</span>
+      <button class="copy-btn" onclick="copyCode(this)">⎘ Copy</button>
+    </div>
+    <pre>https://yourdomain.com/?admin=true</pre>
+  </div>
+  <p>You will see a browser alert confirming <strong>"🛡️ Admin Mode Activated!"</strong>. From that point on, as long as you use the same browser:</p>
+  <ul class="checklist">
+    <li>All ad zones are hidden (no accidental self-clicks).</li>
+    <li>Google Analytics tracking is disabled for your sessions.</li>
+    <li>A console message confirms the protection is active.</li>
+    <li>Your preference is saved in <code>localStorage</code> — it persists across page refreshes.</li>
+  </ul>
+
+  <h3>Deactivating Admin Mode</h3>
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-lang">Deactivate Admin Mode</span>
+      <button class="copy-btn" onclick="copyCode(this)">⎘ Copy</button>
+    </div>
+    <pre>https://yourdomain.com/?admin=false</pre>
+  </div>
+  <p>You will see a confirmation alert. Your session will return to normal visitor mode.</p>
+
+  <div class="banner info">
+    <span class="banner-icon">💡</span>
+    <div class="banner-body">
+      <strong>Localhost is Automatically Protected</strong>
+      <p>When running the site on <code>localhost</code>, <code>127.0.0.1</code>, or a local network IP (<code>192.168.x.x</code>), Admin Mode is always active automatically. You never need to add <code>?admin=true</code> during local development.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────── SEO ─────────────── -->
+<section class="section" id="seo">
+  <h2>🔍 SEO & Social Meta Tags</h2>
+  <p>
+    LinkVault comes pre-built with a comprehensive SEO setup inside <code>index.html</code> and <code>locked.html</code>. You simply need to update a few placeholders with your own details.
+  </p>
+
+  <h3>What's Already Configured</h3>
+  <ul class="checklist">
+    <li>Standard meta tags (<code>description</code>, <code>author</code>, <code>robots</code>).</li>
+    <li>Canonical URL tag to prevent duplicate content issues.</li>
+    <li>Open Graph tags (Facebook, WhatsApp, LinkedIn sharing previews).</li>
+    <li>Twitter / X Card tags (large image preview cards).</li>
+    <li>PWA theme color and Apple touch icon.</li>
+  </ul>
+
+  <h3>What You Need to Update</h3>
+  <p>Search for the placeholder text <mark>https://yourdomain.com</mark> in both HTML files and replace it with your actual domain. Do the same for <mark>@yourtwitterhandle</mark>. Comments in the code guide you through each one.</p>
+
+  <h3>OG Cover Image</h3>
+  <p>Create a <strong>1200×630 pixel</strong> image featuring your brand/logo on a dark background and save it as <code>assets/img/og-cover.webp</code>. This image appears as the preview thumbnail when your link is shared on social media.</p>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-lang">index.html — Key Placeholders to Update</span>
+      <button class="copy-btn" onclick="copyCode(this)">⎘ Copy</button>
+    </div>
+    <pre><span class="c">&lt;!-- 1. Canonical URL --&gt;</span>
+&lt;link rel="canonical" href="<span class="n">https://yourdomain.com</span>/index.html" /&gt;
+
+<span class="c">&lt;!-- 2. Open Graph --&gt;</span>
+&lt;meta property="og:url" content="<span class="n">https://yourdomain.com</span>/index.html" /&gt;
+&lt;meta property="og:image" content="<span class="n">https://yourdomain.com</span>/assets/img/og-cover.webp" /&gt;
+
+<span class="c">&lt;!-- 3. Twitter / X --&gt;</span>
+&lt;meta name="twitter:site" content="<span class="n">@yourtwitterhandle</span>" /&gt;
+&lt;meta name="twitter:creator" content="<span class="n">@yourtwitterhandle</span>" /&gt;</pre>
+  </div>
+</section>
+
+<!-- ─────────────── SUPPORT ─────────────── -->
+<section class="section" id="support">
+  <h2>💬 Support & Credits</h2>
+
+  <div class="glass-card">
+    <h3>Need Help?</h3>
+    <p>
+      If you encounter any issues, have questions about configuration, or need help customizing LinkVault beyond what is described in this documentation, support is available through the marketplace where you purchased this item.
+    </p>
+    <ul class="doc-list">
+      <li>Check this documentation thoroughly first — most questions are answered here.</li>
+     <li>Submit a support request via the <strong>Comments</strong> or <strong>Support</strong> tab on the item page (CodeCanyon / Codester), or contact me via my <a href="https://mdkawserbd.eu.cc" target="_blank" style="color: var(--cyan); text-decoration: underline;">Portfolio</a>.</li>
+
+    </ul>
+  </div>
+
+  <div class="glass-card" style="margin-top:1.25rem">
+    <h3>Before You Submit a Support Request</h3>
+    <ul class="checklist">
+      <li>Have you replaced both <code>site-config.js</code> and <code>ads.js</code> with your generated versions?</li>
+      <li>Have you updated all <code>yourdomain.com</code> placeholders in the HTML files?</li>
+      <li>Is your site running on HTTPS? (Required for PWA features.)</li>
+      <li>Have you deleted or protected the <code>/admin/</code> folder?</li>
+      <li>Have you checked the browser's Developer Console (F12) for any error messages?</li>
+    </ul>
+  </div>
+
+  <hr class="divider"/>
+
+  <h3>About the Author</h3>
+  <div class="glass-card" style="display:flex;gap:1.5rem;align-items:center;flex-wrap:wrap">
+    <div style="width:60px;height:60px;background:linear-gradient(135deg,var(--cyan),var(--blue));border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.5rem;flex-shrink:0">👨‍💻</div>
+    <div>
+      <h3 style="margin-bottom:0.2rem">MD KAWSER</h3>
+      <p style="font-size:0.875rem;margin-bottom:0.4rem">Frontend Developer &amp; Digital Product Creator</p>
+      <p style="font-size:0.82rem;color:var(--text-dim);margin:0">
+        Crafting premium web tools and templates with a focus on performance, monetization, and developer experience.
+        Thank you for choosing LinkVault — I hope it brings value to your online presence.
+      </p>
+    </div>
+  </div>
+
+  <div class="banner success" style="margin-top:1.5rem">
+    <span class="banner-icon">⭐</span>
+    <div class="banner-body">
+      <strong>Please Leave a Review!</strong>
+      <p>If LinkVault has been helpful, please consider leaving a 5-star review on the marketplace. It helps support continued development and improvements to this product. Thank you! 🙏</p>
+    </div>
+  </div>
+
+  <hr class="divider"/>
+
+  <h3>Changelog</h3>
+  <table class="doc-table">
+    <thead><tr><th>Version</th><th>Date</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><span class="pill pill-cyan">v1.0</span></td>
+        <td>2026</td>
+        <td>Initial release — Core link-locking engine, Admin Tool, Anti-Adblock, PWA, Sitemap Generator, i18n system.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p style="margin-top:2rem;font-size:0.8rem;color:var(--text-dim);font-family:var(--font-mono)">
+    © 2026 MD KAWSER. LinkVault is a premium commercial product. Redistribution or resale of the source code is strictly prohibited under the marketplace license terms.
+  </p>
+</section>
+
+</main>
+</div><!-- /layout -->
+
+<!-- FOOTER -->
+<footer class="footer">
+  <span>LinkVault Documentation <span class="footer-brand">v1.0</span></span>
+  <span>Built by <span class="footer-brand">MD KAWSER</span></span>
+</footer>
+
+<script>
+// ── PROGRESS BAR ──
+window.addEventListener('scroll',()=>{
+  const el=document.getElementById('progress');
+  const total=document.documentElement.scrollHeight-window.innerHeight;
+  el.style.width=(window.scrollY/total*100)+'%';
+});
+
+// ── HAMBURGER ──
+const hamburger=document.getElementById('hamburgerBtn');
+const sidebar=document.getElementById('sidebar');
+const overlay=document.getElementById('sidebarOverlay');
+function toggleSidebar(){
+  sidebar.classList.toggle('open');
+  overlay.classList.toggle('active');
+}
+hamburger.addEventListener('click',toggleSidebar);
+overlay.addEventListener('click',toggleSidebar);
+
+// ── ACTIVE NAV ON SCROLL ──
+const sections=document.querySelectorAll('.section[id]');
+const navLinks=document.querySelectorAll('.nav-link');
+const observer=new IntersectionObserver(entries=>{
+  entries.forEach(entry=>{
+    if(entry.isIntersecting){
+      navLinks.forEach(l=>l.classList.remove('active'));
+      const active=document.querySelector(`.nav-link[href="#${entry.target.id}"]`);
+      if(active)active.classList.add('active');
+    }
+  });
+},{rootMargin:'-30% 0px -60% 0px'});
+sections.forEach(s=>observer.observe(s));
+
+// Close sidebar on nav link click (mobile)
+navLinks.forEach(link=>{
+  link.addEventListener('click',()=>{
+    if(window.innerWidth<=900){
+      sidebar.classList.remove('open');
+      overlay.classList.remove('active');
+    }
+  });
+});
+
+// ── COPY TO CLIPBOARD ──
+function copyCode(btn){
+  const pre=btn.closest('.code-block').querySelector('pre');
+  const text=pre.innerText;
+  navigator.clipboard.writeText(text).then(()=>{
+    const orig=btn.innerHTML;
+    btn.innerHTML='✓ Copied!';
+    btn.classList.add('copied');
+    setTimeout(()=>{btn.innerHTML=orig;btn.classList.remove('copied');},2000);
+  }).catch(()=>{
+    // Fallback for older browsers
+    const ta=document.createElement('textarea');
+    ta.value=text;ta.style.position='fixed';ta.style.opacity='0';
+    document.body.appendChild(ta);ta.select();
+    document.execCommand('copy');document.body.removeChild(ta);
+    const orig=btn.innerHTML;
+    btn.innerHTML='✓ Copied!';btn.classList.add('copied');
+    setTimeout(()=>{btn.innerHTML=orig;btn.classList.remove('copied');},2000);
+  });
+}
+</script>
+</body>
+</html>

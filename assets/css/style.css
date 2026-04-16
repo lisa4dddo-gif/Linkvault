@@ -1,12 +1,12 @@
 /* ================================================================
-   LinkVault — Premium Stylesheet
+   LinkVault — Premium Stylesheet (Fully Optimized)
    File: assets/css/style.css
 
    TABLE OF CONTENTS:
    1.  CSS Variables (Customize colors, fonts, sizes here)
    2.  Reset & Base
    3.  Typography
-   4.  Utility Classes
+   4.  Utility Classes & Buttons
    5.  Layout — Container & Grid
    6.  Background Decorations
    7.  Navbar
@@ -16,15 +16,16 @@
    11. Features Section
    12. How It Works Section
    13. Footer
-   14. ── Locked Page ──
+   14. Locked Page
    15. Ad Zones
-   16. AntiAdblock Overlay
+   16. Anti-Adblock Overlay
    17. Countdown Ring
-   18. Start Timer Button  [NEW]
-   19. Adblock Soft Penalty Banner  [NEW]
+   18. Start Timer Button
+   19. Adblock Soft Penalty Banner
    20. Get Link Section
    21. Scroll Reveal Animations
-   22. Responsive Breakpoints
+   22. No-JS Fallback & Misc Fixes
+   23. Responsive Breakpoints (Mobile-First)
    ================================================================ */
 
 
@@ -33,38 +34,38 @@
    ════════════════════════════════════════════════ */
 :root {
   /* ── Palette ── */
-  --clr-bg:          #080c14;       /* Page background */
-  --clr-surface:     #0e1420;       /* Card backgrounds */
-  --clr-surface-2:   #141c2c;       /* Slightly lighter surfaces */
-  --clr-border:      rgba(255,255,255,0.07);
-  --clr-border-glow: rgba(0,224,255,0.25);
+  --clr-bg:          #080c14;
+  --clr-surface:     #0e1420;
+  --clr-surface-2:   #141c2c;
+  --clr-border:      rgba(255, 255, 255, 0.07);
+  --clr-border-glow: rgba(0, 224, 255, 0.25);
 
-  --clr-accent:      #00e0ff;       /* Primary cyan accent */
-  --clr-accent-dim:  rgba(0,224,255,0.12);
-  --clr-accent-2:    #ff6b35;       /* Orange secondary accent */
-  --clr-amber:       #f5a623;       /* Warning / attention color */
+  --clr-accent:     #00e0ff;
+  --clr-accent-dim: rgba(0, 224, 255, 0.12);
+  --clr-accent-2:   #ff6b35;
+  --clr-amber:      #f5a623;
 
-  --clr-text:        #e8edf5;       /* Primary text */
-  --clr-text-muted:  #6b7a99;       /* Secondary/muted text */
-  --clr-text-dim:    #3d4a66;       /* Very dim text */
+  --clr-text:       #e8edf5;
+  --clr-text-muted: #6b7a99;
+  --clr-text-dim:   #3d4a66;
 
   /* ── Gradients ── */
-  --grad-accent:   linear-gradient(135deg, #00e0ff 0%, #0078ff 100%);
-  --grad-hero:     linear-gradient(135deg, #00e0ff 0%, #a855f7 60%, #ff6b35 100%);
-  --grad-surface:  linear-gradient(135deg, #0e1420 0%, #111827 100%);
+  --grad-accent:  linear-gradient(135deg, #00e0ff 0%, #0078ff 100%);
+  --grad-hero:    linear-gradient(135deg, #00e0ff 0%, #a855f7 60%, #ff6b35 100%);
+  --grad-surface: linear-gradient(135deg, #0e1420 0%, #111827 100%);
 
   /* ── Typography ── */
   --font-display: 'Syne', system-ui, sans-serif;
   --font-mono:    'DM Mono', 'Fira Code', monospace;
 
-  /* ── Spacing ── */
+  /* ── Fluid Spacing (mobile-first, scales up) ── */
   --space-xs:  0.25rem;
   --space-sm:  0.5rem;
   --space-md:  1rem;
   --space-lg:  1.5rem;
-  --space-xl:  2.5rem;
-  --space-2xl: 4rem;
-  --space-3xl: 6rem;
+  --space-xl:  clamp(1.5rem, 4vw, 2.5rem);
+  --space-2xl: clamp(2rem,   5vw, 4rem);
+  --space-3xl: clamp(3rem,   7vw, 6rem);
 
   /* ── Radii ── */
   --radius-sm: 6px;
@@ -73,9 +74,9 @@
   --radius-xl: 28px;
 
   /* ── Shadows ── */
-  --shadow-card:   0 4px 32px rgba(0,0,0,0.5), 0 1px 0 rgba(255,255,255,0.04) inset;
-  --shadow-accent: 0 0 30px rgba(0,224,255,0.2);
-  --shadow-glow:   0 0 80px rgba(0,224,255,0.08);
+  --shadow-card:   0 4px 32px rgba(0, 0, 0, 0.5), 0 1px 0 rgba(255, 255, 255, 0.04) inset;
+  --shadow-accent: 0 0 30px rgba(0, 224, 255, 0.2);
+  --shadow-glow:   0 0 80px rgba(0, 224, 255, 0.08);
 
   /* ── Transitions ── */
   --ease-out:  cubic-bezier(0.22, 1, 0.36, 1);
@@ -85,8 +86,11 @@
   --dur-slow:  500ms;
 
   /* ── Countdown (configurable) ── */
-  --countdown-seconds: 10;         /* Change this to adjust timer duration */
-  --ring-circumference: 326.7px;   /* 2 * π * 52 (SVG circle r=52) */
+  --countdown-seconds:  10;
+  --ring-circumference: 326.7px; /* 2 * π * 52 (SVG circle r=52) */
+
+  /* ── Touch target minimum (WCAG 2.5.5) ── */
+  --touch-target: 44px;
 }
 
 
@@ -101,15 +105,19 @@
 
 html {
   scroll-behavior: smooth;
+  /* Prevent font size inflation on iOS landscape */
   -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 body {
   font-family: var(--font-display);
-  font-size: 1rem;
+  /* Fluid base font: 15px on small phones → 16px on desktop */
+  font-size: clamp(0.9375rem, 1vw + 0.75rem, 1rem);
   line-height: 1.65;
   color: var(--clr-text);
   background-color: var(--clr-bg);
+  /* Prevent horizontal scroll bleed on all viewports */
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -122,17 +130,34 @@ a {
 
 ul { list-style: none; }
 
-img, svg { display: block; max-width: 100%; }
+img, svg {
+  display: block;
+  max-width: 100%;
+  /* Prevent image-induced layout shifts */
+  height: auto;
+}
 
-button { cursor: pointer; font-family: inherit; }
+button {
+  cursor: pointer;
+  font-family: inherit;
+  /* Remove default tap highlight on iOS */
+  -webkit-tap-highlight-color: transparent;
+}
+
+input, textarea, select {
+  font-family: inherit;
+  -webkit-tap-highlight-color: transparent;
+}
 
 /* Screen-reader only utility */
 .sr-only {
   position: absolute;
-  width: 1px; height: 1px;
-  padding: 0; margin: -1px;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
   overflow: hidden;
-  clip: rect(0,0,0,0);
+  clip: rect(0, 0, 0, 0);
   white-space: nowrap;
   border-width: 0;
 }
@@ -144,6 +169,7 @@ code {
   background: var(--clr-accent-dim);
   padding: 2px 6px;
   border-radius: var(--radius-sm);
+  word-break: break-word;
 }
 
 
@@ -154,55 +180,76 @@ h1, h2, h3, h4 {
   font-weight: 700;
   line-height: 1.15;
   letter-spacing: -0.02em;
+  /* Prevent text from breaking mid-word on narrow screens */
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 
-h1 { font-size: clamp(2.2rem, 6vw, 4rem); font-weight: 800; }
-h2 { font-size: clamp(1.6rem, 4vw, 2.6rem); }
-h3 { font-size: 1.15rem; font-weight: 600; }
+/* Fluid type scale — no arbitrary breakpoint jumps */
+h1 { font-size: clamp(1.85rem, 5vw + 0.5rem, 4rem);   font-weight: 800; }
+h2 { font-size: clamp(1.4rem,  3.5vw + 0.5rem, 2.6rem); }
+h3 { font-size: clamp(1rem,    1.5vw + 0.5rem, 1.15rem); font-weight: 600; }
 
 .gradient-text {
   background: var(--grad-hero);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  /* Ensure gradient text never clips on narrow viewports */
+  display: inline-block;
 }
 
 .accent { color: var(--clr-accent); }
 
 
 /* ════════════════════════════════════════════════
-   4. UTILITY CLASSES
+   4. UTILITY CLASSES & BUTTONS
    ════════════════════════════════════════════════ */
 .hidden { display: none !important; }
 
+/* ── Base Button ── */
 .btn {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: var(--space-sm);
+  /* Minimum touch target height */
+  min-height: var(--touch-target);
   padding: 0.7rem 1.4rem;
   border: none;
   border-radius: var(--radius-md);
   font-family: var(--font-display);
-  font-size: 0.9rem;
+  font-size: clamp(0.82rem, 1.5vw + 0.4rem, 0.9rem);
   font-weight: 600;
   letter-spacing: 0.01em;
-  transition: transform var(--dur-fast) var(--ease-snap),
-              box-shadow var(--dur-med) var(--ease-out),
-              background var(--dur-fast);
+  transition:
+    transform  var(--dur-fast) var(--ease-snap),
+    box-shadow var(--dur-med)  var(--ease-out),
+    background var(--dur-fast);
   user-select: none;
   white-space: nowrap;
+  /* Prevent text overflow within buttons */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .btn:active { transform: scale(0.97); }
+
+/* Focus ring for accessibility — visible on keyboard nav only */
+.btn:focus-visible {
+  outline: 2px solid var(--clr-accent);
+  outline-offset: 3px;
+}
 
 /* Primary button */
 .btn-primary {
   background: var(--grad-accent);
   color: #020e1a;
-  box-shadow: 0 4px 20px rgba(0,224,255,0.25);
+  box-shadow: 0 4px 20px rgba(0, 224, 255, 0.25);
 }
 .btn-primary:hover {
-  box-shadow: 0 6px 32px rgba(0,224,255,0.45);
+  box-shadow: 0 6px 32px rgba(0, 224, 255, 0.45);
   transform: translateY(-1px);
 }
 
@@ -224,11 +271,20 @@ h3 { font-size: 1.15rem; font-weight: 600; }
   color: var(--clr-accent);
   border: 1px solid var(--clr-border-glow);
 }
-.btn-accent:hover { background: rgba(0,224,255,0.2); }
+.btn-accent:hover { background: rgba(0, 224, 255, 0.2); }
 
-/* Sizes */
-.btn-sm  { padding: 0.45rem 0.9rem; font-size: 0.8rem; }
-.btn-large { padding: 1rem 2rem; font-size: 1rem; border-radius: var(--radius-lg); }
+/* Size modifiers */
+.btn-sm {
+  min-height: var(--touch-target);
+  padding: 0.45rem 0.9rem;
+  font-size: 0.8rem;
+}
+
+.btn-large {
+  padding: 1rem 2rem;
+  font-size: clamp(0.9rem, 2vw + 0.4rem, 1rem);
+  border-radius: var(--radius-lg);
+}
 
 /* Pulsing CTA button */
 .btn-pulse {
@@ -236,19 +292,20 @@ h3 { font-size: 1.15rem; font-weight: 600; }
 }
 
 @keyframes pulse-ring {
-  0%, 100% { box-shadow: 0 4px 20px rgba(0,224,255,0.25); }
-  50%       { box-shadow: 0 4px 40px rgba(0,224,255,0.55), 0 0 0 8px rgba(0,224,255,0.1); }
+  0%, 100% { box-shadow: 0 4px 20px rgba(0, 224, 255, 0.25); }
+  50%       { box-shadow: 0 4px 40px rgba(0, 224, 255, 0.55), 0 0 0 8px rgba(0, 224, 255, 0.1); }
 }
 
 
 /* ════════════════════════════════════════════════
-   5. LAYOUT
+   5. LAYOUT — CONTAINER & GRID
    ════════════════════════════════════════════════ */
 .container {
   width: 100%;
   max-width: 1100px;
   margin-inline: auto;
-  padding-inline: var(--space-lg);
+  /* Fluid side padding: 1rem on mobile → 1.5rem on desktop */
+  padding-inline: clamp(1rem, 4vw, 1.5rem);
 }
 
 .section-header {
@@ -282,10 +339,12 @@ h3 { font-size: 1.15rem; font-weight: 600; }
   inset: 0;
   z-index: 0;
   background-image:
-    linear-gradient(rgba(0,224,255,0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0,224,255,0.03) 1px, transparent 1px);
+    linear-gradient(rgba(0, 224, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 224, 255, 0.03) 1px, transparent 1px);
   background-size: 48px 48px;
   pointer-events: none;
+  /* GPU layer for performance */
+  will-change: transform;
 }
 
 .bg-glow {
@@ -293,15 +352,16 @@ h3 { font-size: 1.15rem; font-weight: 600; }
   top: -20%;
   left: 50%;
   transform: translateX(-50%);
-  width: 900px;
+  /* Clamp width so it never causes horizontal overflow */
+  width: min(900px, 150vw);
   height: 600px;
-  background: radial-gradient(ellipse, rgba(0,120,255,0.12) 0%, transparent 70%);
+  background: radial-gradient(ellipse, rgba(0, 120, 255, 0.12) 0%, transparent 70%);
   z-index: 0;
   pointer-events: none;
 }
 
 .bg-glow--amber {
-  background: radial-gradient(ellipse, rgba(245,166,35,0.08) 0%, transparent 70%);
+  background: radial-gradient(ellipse, rgba(245, 166, 35, 0.08) 0%, transparent 70%);
 }
 
 /* All sections sit above the decorations */
@@ -321,7 +381,7 @@ nav, main, header, section, footer,
   z-index: 100;
   padding: var(--space-md) 0;
   border-bottom: 1px solid var(--clr-border);
-  background: rgba(8,12,20,0.8);
+  background: rgba(8, 12, 20, 0.8);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
 }
@@ -337,11 +397,14 @@ nav, main, header, section, footer,
   display: flex;
   align-items: center;
   gap: var(--space-sm);
-  font-size: 1.2rem;
+  font-size: clamp(1rem, 3vw, 1.2rem);
   font-weight: 800;
   letter-spacing: -0.03em;
   color: var(--clr-text);
   transition: opacity var(--dur-fast);
+  /* Prevent logo from shrinking on very small screens */
+  flex-shrink: 0;
+  min-height: var(--touch-target);
 }
 .nav-logo:hover { opacity: 0.8; }
 
@@ -349,10 +412,12 @@ nav, main, header, section, footer,
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px; height: 32px;
+  width: 32px;
+  height: 32px;
   background: var(--grad-accent);
   border-radius: var(--radius-sm);
   color: #020e1a;
+  flex-shrink: 0;
 }
 
 .nav-links {
@@ -366,6 +431,10 @@ nav, main, header, section, footer,
 .nav-links a {
   color: var(--clr-text-muted);
   transition: color var(--dur-fast);
+  /* Touch-friendly hit area without visual change */
+  min-height: var(--touch-target);
+  display: inline-flex;
+  align-items: center;
 }
 .nav-links a:not(.btn):hover { color: var(--clr-text); }
 
@@ -383,14 +452,18 @@ nav, main, header, section, footer,
   align-items: center;
   gap: var(--space-sm);
   font-family: var(--font-mono);
-  font-size: 0.72rem;
+  font-size: clamp(0.65rem, 1.5vw, 0.72rem);
   color: var(--clr-amber);
-  background: rgba(245,166,35,0.08);
-  border: 1px solid rgba(245,166,35,0.2);
+  background: rgba(245, 166, 35, 0.08);
+  border: 1px solid rgba(245, 166, 35, 0.2);
   padding: 0.4rem 1rem;
   border-radius: 100px;
   margin-bottom: var(--space-xl);
   letter-spacing: 0.05em;
+  /* Allow badge text to wrap on ultra-narrow screens */
+  max-width: 100%;
+  white-space: normal;
+  text-align: center;
 }
 
 .hero-title {
@@ -399,7 +472,7 @@ nav, main, header, section, footer,
 }
 
 .hero-subtitle {
-  font-size: clamp(1rem, 2.5vw, 1.15rem);
+  font-size: clamp(0.95rem, 2.5vw, 1.15rem);
   color: var(--clr-text-muted);
   max-width: 580px;
   margin-inline: auto;
@@ -407,6 +480,7 @@ nav, main, header, section, footer,
   line-height: 1.8;
 }
 
+/* Desktop-only line break inside hero title */
 .br-desktop { display: none; }
 @media (min-width: 640px) { .br-desktop { display: block; } }
 
@@ -424,7 +498,7 @@ nav, main, header, section, footer,
   background: var(--clr-surface);
   border: 1px solid var(--clr-border);
   border-radius: var(--radius-xl);
-  padding: var(--space-lg);
+  padding: clamp(1rem, 3vw, 1.5rem);
   box-shadow: var(--shadow-card);
   transition: border-color var(--dur-med);
 }
@@ -433,6 +507,7 @@ nav, main, header, section, footer,
   box-shadow: var(--shadow-card), var(--shadow-accent);
 }
 
+/* Input row — stacks vertically on phones, horizontal on larger screens */
 .input-row {
   display: flex;
   align-items: stretch;
@@ -442,8 +517,11 @@ nav, main, header, section, footer,
   border-radius: var(--radius-lg);
   padding: var(--space-sm);
   transition: border-color var(--dur-fast);
+  /* Prevent any child from busting out of the pill shape */
+  overflow: hidden;
+  min-height: 54px;
 }
-.input-row:focus-within { border-color: rgba(0,224,255,0.4); }
+.input-row:focus-within { border-color: rgba(0, 224, 255, 0.4); }
 
 .input-prefix {
   display: flex;
@@ -455,22 +533,23 @@ nav, main, header, section, footer,
 
 .url-input {
   flex: 1;
+  /* Critical: prevents the input from overflowing its container */
+  min-width: 0;
   background: transparent;
   border: none;
   outline: none;
   font-family: var(--font-mono);
-  font-size: 0.9rem;
+  font-size: clamp(0.8rem, 2vw, 0.9rem);
   color: var(--clr-text);
   padding: 0.5rem 0;
-  min-width: 0;
 }
-
 .url-input::placeholder { color: var(--clr-text-dim); }
 
+/* Visibility helpers for button label/icon responsiveness */
 .btn-text { display: inline; }
-.btn-icon { display: flex; }
+.btn-icon  { display: flex; }
 
-/* Error message */
+/* Inline error message */
 .url-error {
   font-size: 0.8rem;
   color: #ff5e57;
@@ -479,13 +558,13 @@ nav, main, header, section, footer,
   min-height: 1.2em;
 }
 
-/* Output — generated locked link */
+/* Generated locked link output */
 .output-wrapper {
   margin-top: var(--space-md);
   background: var(--clr-surface);
   border: 1px solid var(--clr-border-glow);
   border-radius: var(--radius-lg);
-  padding: var(--space-md) var(--space-lg);
+  padding: var(--space-md) clamp(1rem, 3vw, 1.5rem);
   animation: slide-up var(--dur-slow) var(--ease-out) both;
 }
 
@@ -510,8 +589,11 @@ nav, main, header, section, footer,
   font-family: var(--font-mono);
   font-size: 0.8rem;
   color: var(--clr-text-muted);
+  /* Prevent long URLs from blowing out the layout */
   word-break: break-all;
+  overflow-wrap: anywhere;
   flex: 1;
+  min-width: 0;
 }
 
 .preview-link {
@@ -522,6 +604,7 @@ nav, main, header, section, footer,
   color: var(--clr-text-muted);
   margin-top: var(--space-sm);
   transition: color var(--dur-fast);
+  min-height: var(--touch-target);
 }
 .preview-link:hover { color: var(--clr-accent); }
 
@@ -533,15 +616,16 @@ nav, main, header, section, footer,
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: var(--space-xl);
+  gap: clamp(1rem, 4vw, 2.5rem);
   flex-wrap: wrap;
+  row-gap: var(--space-lg);
 }
 
 .stat { text-align: center; }
 
 .stat-number {
   display: block;
-  font-size: 1.6rem;
+  font-size: clamp(1.2rem, 3vw, 1.6rem);
   font-weight: 800;
   color: var(--clr-accent);
   line-height: 1;
@@ -561,6 +645,7 @@ nav, main, header, section, footer,
   width: 1px;
   height: 40px;
   background: var(--clr-border);
+  flex-shrink: 0;
 }
 
 
@@ -574,7 +659,8 @@ nav, main, header, section, footer,
 
 .features-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  /* Mobile: 1 col → Tablet: 2 col → Desktop: 3 col — all via auto-fit */
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
   gap: var(--space-lg);
 }
 
@@ -582,11 +668,12 @@ nav, main, header, section, footer,
   background: var(--clr-surface);
   border: 1px solid var(--clr-border);
   border-radius: var(--radius-lg);
-  padding: var(--space-xl);
-  transition: border-color var(--dur-med), transform var(--dur-med) var(--ease-out),
-              box-shadow var(--dur-med);
+  padding: clamp(1.25rem, 3vw, 2.5rem);
+  transition:
+    border-color var(--dur-med),
+    transform    var(--dur-med) var(--ease-out),
+    box-shadow   var(--dur-med);
 }
-
 .feature-card:hover {
   border-color: var(--clr-border-glow);
   transform: translateY(-4px);
@@ -597,7 +684,8 @@ nav, main, header, section, footer,
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 46px; height: 46px;
+  width: 46px;
+  height: 46px;
   background: var(--clr-accent-dim);
   border: 1px solid var(--clr-border-glow);
   border-radius: var(--radius-md);
@@ -636,8 +724,8 @@ nav, main, header, section, footer,
 .step {
   display: flex;
   align-items: flex-start;
-  gap: var(--space-xl);
-  padding: var(--space-xl);
+  gap: clamp(1rem, 4vw, 2.5rem);
+  padding: clamp(1rem, 3vw, 2.5rem);
   background: var(--clr-surface);
   border: 1px solid var(--clr-border);
   border-radius: var(--radius-lg);
@@ -647,7 +735,7 @@ nav, main, header, section, footer,
 
 .step-number {
   font-family: var(--font-mono);
-  font-size: 2.2rem;
+  font-size: clamp(1.6rem, 4vw, 2.2rem);
   font-weight: 300;
   color: var(--clr-text-dim);
   line-height: 1;
@@ -662,7 +750,8 @@ nav, main, header, section, footer,
   width: 1px;
   height: 32px;
   background: linear-gradient(to bottom, var(--clr-border-glow), var(--clr-border));
-  margin-left: calc(var(--space-xl) + 2.8rem);
+  /* Dynamic indent: matches the step number column width */
+  margin-left: clamp(1.75rem, 5vw, 3.8rem);
 }
 
 
@@ -703,8 +792,8 @@ nav, main, header, section, footer,
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: var(--space-2xl) 0;
-  padding-bottom: calc(var(--space-2xl) + 100px);
+  /* Bottom padding accounts for the sticky ad bar */
+  padding: var(--space-2xl) 0 calc(var(--space-2xl) + 80px);
 }
 
 .locked-main .container {
@@ -712,6 +801,8 @@ nav, main, header, section, footer,
   flex-direction: column;
   align-items: center;
   gap: var(--space-xl);
+  /* Full width on mobile */
+  width: 100%;
 }
 
 .locked-card {
@@ -720,7 +811,8 @@ nav, main, header, section, footer,
   background: var(--clr-surface);
   border: 1px solid var(--clr-border);
   border-radius: var(--radius-xl);
-  padding: var(--space-2xl) var(--space-xl);
+  /* Fluid padding: compact on phones, spacious on desktop */
+  padding: clamp(1.5rem, 5vw, 3rem) clamp(1.25rem, 4vw, 2.5rem);
   box-shadow: var(--shadow-card);
   display: flex;
   flex-direction: column;
@@ -728,6 +820,8 @@ nav, main, header, section, footer,
   text-align: center;
   gap: var(--space-xl);
   animation: slide-up 0.6s var(--ease-out) both;
+  /* Prevent card content from causing overflow on narrow screens */
+  overflow: hidden;
 }
 
 .locked-logo {
@@ -738,10 +832,12 @@ nav, main, header, section, footer,
   font-weight: 800;
   color: var(--clr-text);
   letter-spacing: -0.03em;
+  min-height: var(--touch-target);
 }
 
 .locked-logo svg {
-  width: 22px; height: 22px;
+  width: 22px;
+  height: 22px;
   color: var(--clr-accent);
 }
 
@@ -774,7 +870,7 @@ nav, main, header, section, footer,
 }
 .error-icon svg { width: 48px; height: 48px; }
 
-.error-section h2 { font-size: 1.4rem; }
+.error-section h2 { font-size: clamp(1.1rem, 3vw, 1.4rem); }
 .error-section p  { color: var(--clr-text-muted); font-size: 0.9rem; }
 
 
@@ -785,37 +881,39 @@ nav, main, header, section, footer,
   overflow: hidden;
 }
 
-/* Header banner at top of locked page */
+/* Header banner — reserved height prevents CLS */
 .ad-zone--header {
   width: 100%;
+  min-height: 110px;
   padding: var(--space-sm) 0;
-  background: rgba(8,12,20,0.9);
+  background: rgba(8, 12, 20, 0.9);
   border-bottom: 1px solid var(--clr-border);
 }
 
-/* Content square ad below the locked card */
+/* Content square ad (300×250) */
 .ad-zone--content {
   width: 100%;
   max-width: 340px;
+  min-height: 280px;
   border-radius: var(--radius-lg);
   border: 1px dashed var(--clr-border);
   overflow: hidden;
 }
 
-/* Sticky footer ad */
+/* Sticky footer ad bar */
 .ad-zone--sticky {
   position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
   z-index: 200;
-  background: rgba(8,12,20,0.95);
+  min-height: 70px;
+  background: rgba(8, 12, 20, 0.95);
   border-top: 1px solid var(--clr-border);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   transition: transform var(--dur-med) var(--ease-out);
 }
-
 .ad-zone--sticky.dismissed {
   transform: translateY(100%);
 }
@@ -838,7 +936,7 @@ nav, main, header, section, footer,
   letter-spacing: 0.1em;
 }
 
-/* Demo placeholder box */
+/* Demo placeholder / skeleton box */
 .ad-demo-box {
   display: flex;
   flex-direction: column;
@@ -850,12 +948,12 @@ nav, main, header, section, footer,
   max-width: 728px;
   background: repeating-linear-gradient(
     45deg,
-    rgba(255,255,255,0.015),
-    rgba(255,255,255,0.015) 10px,
+    rgba(255, 255, 255, 0.015),
+    rgba(255, 255, 255, 0.015) 10px,
     transparent 10px,
     transparent 20px
   );
-  border: 1px dashed rgba(255,255,255,0.1);
+  border: 1px dashed rgba(255, 255, 255, 0.1);
   border-radius: var(--radius-sm);
   color: var(--clr-text-dim);
   font-family: var(--font-mono);
@@ -865,32 +963,40 @@ nav, main, header, section, footer,
 
 .ad-demo-box--slim { min-height: 50px; }
 
+/* Close button for sticky ad bar */
 .ad-sticky-close {
   position: absolute;
   top: 50%;
   right: var(--space-md);
   transform: translateY(-50%);
+  /* Ensure adequate touch target */
+  width: var(--touch-target);
+  height: var(--touch-target);
+  display: flex;
+  align-items: center;
+  justify-content: center;
   background: none;
   border: 1px solid var(--clr-border);
   border-radius: var(--radius-sm);
   color: var(--clr-text-muted);
-  padding: 4px;
-  display: flex;
   transition: color var(--dur-fast), border-color var(--dur-fast);
 }
-.ad-sticky-close:hover { color: var(--clr-text); border-color: var(--clr-text-muted); }
+.ad-sticky-close:hover {
+  color: var(--clr-text);
+  border-color: var(--clr-text-muted);
+}
 
 
 /* ════════════════════════════════════════════════
    16. ANTI-ADBLOCK OVERLAY
-   (kept in DOM for compatibility, but script.js
-    will never show it — Soft Penalty is used instead)
+   (Kept in DOM for backward compatibility; the soft
+   penalty banner is the active mechanism instead.)
    ════════════════════════════════════════════════ */
 .adblock-overlay {
   position: fixed;
   inset: 0;
   z-index: 999;
-  background: rgba(8,12,20,0.92);
+  background: rgba(8, 12, 20, 0.92);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   display: flex;
@@ -902,9 +1008,9 @@ nav, main, header, section, footer,
 
 .adblock-modal {
   background: var(--clr-surface);
-  border: 1px solid rgba(255,94,87,0.3);
+  border: 1px solid rgba(255, 94, 87, 0.3);
   border-radius: var(--radius-xl);
-  padding: var(--space-2xl);
+  padding: clamp(1.5rem, 5vw, 3rem);
   max-width: 440px;
   width: 100%;
   text-align: center;
@@ -912,22 +1018,24 @@ nav, main, header, section, footer,
   flex-direction: column;
   align-items: center;
   gap: var(--space-lg);
-  box-shadow: 0 0 60px rgba(255,94,87,0.15);
+  box-shadow: 0 0 60px rgba(255, 94, 87, 0.15);
 }
 
 .adblock-icon {
-  width: 60px; height: 60px;
-  background: rgba(255,94,87,0.1);
-  border: 1px solid rgba(255,94,87,0.25);
+  width: 60px;
+  height: 60px;
+  background: rgba(255, 94, 87, 0.1);
+  border: 1px solid rgba(255, 94, 87, 0.25);
   border-radius: var(--radius-md);
   display: flex;
   align-items: center;
   justify-content: center;
   color: #ff5e57;
+  flex-shrink: 0;
 }
 .adblock-icon svg { width: 28px; height: 28px; }
 
-.adblock-modal h2 { font-size: 1.4rem; }
+.adblock-modal h2 { font-size: clamp(1.1rem, 3vw, 1.4rem); }
 .adblock-modal p  { color: var(--clr-text-muted); font-size: 0.9rem; line-height: 1.7; }
 
 
@@ -944,8 +1052,10 @@ nav, main, header, section, footer,
 
 .countdown-ring-wrapper {
   position: relative;
-  width: 160px;
-  height: 160px;
+  /* Fluid ring size: compact on phones, full on desktop */
+  width:  clamp(130px, 30vw, 160px);
+  height: clamp(130px, 30vw, 160px);
+  flex-shrink: 0;
 }
 
 .countdown-ring {
@@ -954,13 +1064,13 @@ nav, main, header, section, footer,
   transform: rotate(-90deg);
 }
 
-/* Outer glow effect behind the ring */
+/* Outer ambient glow behind the ring */
 .countdown-ring-wrapper::before {
   content: '';
   position: absolute;
   inset: -12px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(0,224,255,0.06) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(0, 224, 255, 0.06) 0%, transparent 70%);
   pointer-events: none;
 }
 
@@ -987,10 +1097,12 @@ nav, main, header, section, footer,
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  /* Prevent layout shifts from number changes */
+  font-variant-numeric: tabular-nums;
 }
 
 .countdown-number {
-  font-size: 3rem;
+  font-size: clamp(2.2rem, 7vw, 3rem);
   font-weight: 800;
   color: var(--clr-text);
   line-height: 1;
@@ -1012,6 +1124,7 @@ nav, main, header, section, footer,
   gap: var(--space-sm);
   font-size: 0.85rem;
   color: var(--clr-text-muted);
+  text-align: center;
   animation: hourglass-spin 3s ease-in-out infinite;
 }
 
@@ -1022,18 +1135,15 @@ nav, main, header, section, footer,
 
 
 /* ════════════════════════════════════════════════
-   18. START TIMER BUTTON  [NEW]
-   ─────────────────────────────────────────────────
-   Sits inside .countdown-number-wrapper (absolute,
-   inset: 0) so it perfectly overlays the ring.
-   Matches the dark/cyberpunk glassmorphism aesthetic:
-     • Gradient border via box-shadow layering
-     • Glassmorphism backdrop-filter
-     • Pulsing glow animation (reuses pulse-ring logic)
-     • Hover: lifts with stronger glow + slight scale
+   18. START TIMER BUTTON
+   ────────────────────────────────────────────────
+   Absolutely positioned inside .countdown-ring-wrapper,
+   filling the ring area to overlay it perfectly.
+   Dark cyberpunk glassmorphism aesthetic with a
+   pulsing glow animation and smooth hover state.
    ════════════════════════════════════════════════ */
 #start-timer-btn {
-  /* Positioning: fill the ring wrapper */
+  /* Fill the ring wrapper exactly */
   position: absolute;
   inset: 0;
   display: flex;
@@ -1042,7 +1152,7 @@ nav, main, header, section, footer,
   justify-content: center;
   gap: 4px;
 
-  /* Shape & glass effect */
+  /* Circular shape with glassmorphism fill */
   border-radius: 50%;
   background: rgba(0, 224, 255, 0.07);
   backdrop-filter: blur(6px);
@@ -1059,7 +1169,7 @@ nav, main, header, section, footer,
   text-transform: uppercase;
   color: var(--clr-accent);
 
-  /* Gradient ring using box-shadow */
+  /* Cyan gradient ring via layered box-shadow */
   box-shadow:
     0 0 0 2px rgba(0, 224, 255, 0.35),
     0 0 20px rgba(0, 224, 255, 0.15),
@@ -1068,12 +1178,14 @@ nav, main, header, section, footer,
   /* Pulsing attention animation */
   animation: start-btn-pulse 2.2s ease-in-out infinite;
 
-  /* Smooth transitions */
+  /* Smooth transitions for hover / active states */
   transition:
-    background   var(--dur-fast) var(--ease-out),
-    box-shadow   var(--dur-med)  var(--ease-out),
-    transform    var(--dur-fast) var(--ease-snap),
-    color        var(--dur-fast);
+    background  var(--dur-fast) var(--ease-out),
+    box-shadow  var(--dur-med)  var(--ease-out),
+    transform   var(--dur-fast) var(--ease-snap),
+    color       var(--dur-fast);
+
+  -webkit-tap-highlight-color: transparent;
 }
 
 #start-timer-btn svg {
@@ -1081,8 +1193,6 @@ nav, main, header, section, footer,
   height: 28px;
   color: var(--clr-accent);
   transition: transform var(--dur-med) var(--ease-snap);
-  /* Undo the parent SVG rotate(-90deg) that's on .countdown-ring */
-  /* The icon is a regular HTML element so it does NOT inherit the SVG transform */
 }
 
 #start-timer-btn:hover {
@@ -1094,7 +1204,8 @@ nav, main, header, section, footer,
     0 0 80px rgba(0, 224, 255, 0.12),
     inset 0 1px 0 rgba(255, 255, 255, 0.1);
   transform: scale(1.04);
-  animation-play-state: paused; /* Stop pulsing on hover for a clean feel */
+  /* Pause the pulse on hover for a cleaner feel */
+  animation-play-state: paused;
 }
 
 #start-timer-btn:hover svg {
@@ -1109,7 +1220,7 @@ nav, main, header, section, footer,
     0 0 16px rgba(0, 224, 255, 0.25);
 }
 
-/* The icon + label text wrapper */
+/* Icon + label text wrapper inside the button */
 #start-timer-btn .start-btn-label {
   display: block;
   line-height: 1.2;
@@ -1135,12 +1246,11 @@ nav, main, header, section, footer,
 
 
 /* ════════════════════════════════════════════════
-   19. ADBLOCK SOFT PENALTY BANNER  [NEW]
-   ─────────────────────────────────────────────────
+   19. ADBLOCK SOFT PENALTY BANNER
+   ────────────────────────────────────────────────
    Injected by script.js below the countdown ring
-   when an ad blocker is detected. Styled to be
-   prominent but not hostile — amber/warning palette,
-   glassmorphism card, smooth entrance animation.
+   when an ad blocker is detected. Amber/warning
+   palette with glassmorphism card and entrance animation.
    ════════════════════════════════════════════════ */
 #adblock-soft-banner {
   display: flex;
@@ -1168,6 +1278,8 @@ nav, main, header, section, footer,
   line-height: 1.4;
 
   animation: adblock-banner-in 0.45s var(--ease-snap) both;
+  /* Wrap text on very narrow screens */
+  flex-wrap: wrap;
 }
 
 #adblock-soft-banner .adblock-soft-banner__icon {
@@ -1179,7 +1291,7 @@ nav, main, header, section, footer,
 
 @keyframes adblock-banner-in {
   0%   { opacity: 0; transform: translateY(8px) scale(0.97); }
-  100% { opacity: 1; transform: translateY(0)   scale(1);    }
+  100% { opacity: 1; transform: translateY(0)   scale(1); }
 }
 
 
@@ -1196,7 +1308,8 @@ nav, main, header, section, footer,
 }
 
 .success-icon {
-  width: 68px; height: 68px;
+  width: 68px;
+  height: 68px;
   background: var(--clr-accent-dim);
   border: 2px solid var(--clr-border-glow);
   border-radius: 50%;
@@ -1205,11 +1318,12 @@ nav, main, header, section, footer,
   justify-content: center;
   color: var(--clr-accent);
   animation: pop-in 0.5s var(--ease-snap) both;
+  flex-shrink: 0;
 }
 .success-icon svg { width: 32px; height: 32px; }
 
 .get-link-title {
-  font-size: 1.5rem;
+  font-size: clamp(1.2rem, 4vw, 1.5rem);
 }
 
 .get-link-subtitle {
@@ -1233,7 +1347,9 @@ nav, main, header, section, footer,
 .reveal {
   opacity: 0;
   transform: translateY(24px);
-  transition: opacity 0.65s var(--ease-out), transform 0.65s var(--ease-out);
+  transition:
+    opacity   0.65s var(--ease-out),
+    transform 0.65s var(--ease-out);
 }
 
 .reveal.is-visible {
@@ -1241,13 +1357,13 @@ nav, main, header, section, footer,
   transform: translateY(0);
 }
 
-/* Stagger delays */
-.reveal-delay-1 { transition-delay: 0.1s; }
-.reveal-delay-2 { transition-delay: 0.2s; }
-.reveal-delay-3 { transition-delay: 0.3s; }
+/* Stagger delays for sequential card entrances */
+.reveal-delay-1 { transition-delay: 0.10s; }
+.reveal-delay-2 { transition-delay: 0.20s; }
+.reveal-delay-3 { transition-delay: 0.30s; }
 .reveal-delay-4 { transition-delay: 0.45s; }
 
-/* Keyframe definitions */
+/* ── Shared keyframe definitions ── */
 @keyframes slide-up {
   from { opacity: 0; transform: translateY(20px); }
   to   { opacity: 1; transform: translateY(0); }
@@ -1265,56 +1381,10 @@ nav, main, header, section, footer,
 
 
 /* ════════════════════════════════════════════════
-   22. RESPONSIVE BREAKPOINTS
+   22. NO-JS FALLBACK & MISC FIXES
    ════════════════════════════════════════════════ */
 
-/* ── Small Mobile (≤ 420px) ── */
-@media (max-width: 420px) {
-  .nav-links { display: none; }
-  .btn-text  { display: none; }
-  .btn-icon  { display: flex; }
-  .stats-bar { gap: var(--space-lg); }
-  .stat-divider { display: none; }
-
-  /* Slightly smaller start button label on tiny screens */
-  #start-timer-btn {
-    font-size: 0.55rem;
-    letter-spacing: 0.06em;
-  }
-  #start-timer-btn svg {
-    width: 24px;
-    height: 24px;
-  }
-}
-
-/* ── Tablet and up (≥ 768px) ── */
-@media (min-width: 768px) {
-  .locked-main .container {
-    flex-direction: row;
-    align-items: flex-start;
-    justify-content: center;
-    flex-wrap: wrap;
-  }
-
-  .locked-card { align-self: flex-start; }
-
-  .ad-zone--content {
-    max-width: 300px;
-    align-self: flex-start;
-  }
-
-  .ad-demo-box { min-height: 250px; }
-}
-
-/* ── Desktop (≥ 1024px) ── */
-@media (min-width: 1024px) {
-  .features-grid { grid-template-columns: repeat(3, 1fr); }
-}
-
-
-/* ════════════════════════════════════════════════
-   [FIX 5-A] NO-JS FALLBACK WARNING
-   ════════════════════════════════════════════════ */
+/* No-JavaScript warning banner */
 .noscript-warning {
   position: relative;
   z-index: 9999;
@@ -1322,8 +1392,8 @@ nav, main, header, section, footer,
   align-items: center;
   gap: 0.75rem;
   padding: 0.9rem 1.5rem;
-  background: linear-gradient(135deg, rgba(245,166,35,0.15), rgba(230,81,0,0.12));
-  border-bottom: 1px solid rgba(245,166,35,0.35);
+  background: linear-gradient(135deg, rgba(245, 166, 35, 0.15), rgba(230, 81, 0, 0.12));
+  border-bottom: 1px solid rgba(245, 166, 35, 0.35);
   color: #f5d87a;
   font-family: var(--font-display);
   font-size: 0.88rem;
@@ -1339,36 +1409,188 @@ nav, main, header, section, footer,
   margin-right: 0.4rem;
 }
 
-
-/* ════════════════════════════════════════════════
-   [FIX 5-B] AD ZONE MIN-HEIGHT — CLS PREVENTION
-   ════════════════════════════════════════════════ */
-
-/* Header leaderboard banner */
-.ad-zone--header {
-  min-height: 110px;
-}
-
-/* Side / content square (300×250 Medium Rectangle) */
-.ad-zone--content {
-  min-height: 280px;
-}
-
-/* Sticky footer leaderboard */
-.ad-zone--sticky {
-  min-height: 70px;
-}
-
-
-/* Custom Image Logo Style */
+/* Custom image logo sizes */
 .custom-logo-img {
   width: 32px;
   height: 32px;
   object-fit: contain;
   border-radius: 8px;
+  flex-shrink: 0;
 }
 
 .locked-logo .custom-logo-img {
   width: 40px;
   height: 40px;
+}
+
+
+/* ════════════════════════════════════════════════
+   23. RESPONSIVE BREAKPOINTS (Mobile-First)
+   ════════════════════════════════════════════════ */
+
+/* ──────────────────────────────────────────────
+   TIER 1 — Ultra-narrow (≤ 360px)
+   Safeguard for the smallest Android handsets.
+   ────────────────────────────────────────────── */
+@media (max-width: 360px) {
+  /* Ensure the input row never clips on tiny screens */
+  .input-row {
+    flex-wrap: wrap;
+    min-height: auto;
+    gap: var(--space-xs);
+    padding: var(--space-xs);
+  }
+
+  /* Stack the lock button below the input on tiny devices */
+  #lock-btn {
+    width: 100%;
+    justify-content: center;
+    border-radius: var(--radius-md);
+  }
+
+  .btn-text { display: inline; }
+
+  /* Reduce countdown ring further for extra-small phones */
+  .countdown-ring-wrapper {
+    width: 120px;
+    height: 120px;
+  }
+
+  .countdown-number { font-size: 2rem; }
+
+  /* Simplify the step layout on ultra-small screens */
+  .step {
+    flex-direction: column;
+    gap: var(--space-sm);
+  }
+
+  .step-number { font-size: 1.4rem; }
+
+  .step-connector {
+    margin-left: var(--space-md);
+  }
+
+  /* Prevent hero badge overflow */
+  .hero-badge {
+    font-size: 0.6rem;
+    padding: 0.35rem 0.7rem;
+  }
+}
+
+
+/* ──────────────────────────────────────────────
+   TIER 2 — Small Mobile (≤ 420px)
+   Most modern smartphones in portrait mode.
+   ────────────────────────────────────────────── */
+@media (max-width: 420px) {
+  /* Hide nav text links; keep the logo and action button */
+  .nav-links { display: none; }
+
+  /* Collapse button labels to icon-only on small screens */
+  .btn-text { display: none; }
+  .btn-icon { display: flex; }
+
+  /* Tighten the stats bar and remove dividers */
+  .stats-bar    { gap: var(--space-md); }
+  .stat-divider { display: none; }
+
+  /* Shrink start-timer button label slightly */
+  #start-timer-btn {
+    font-size: 0.55rem;
+    letter-spacing: 0.06em;
+  }
+  #start-timer-btn svg {
+    width: 22px;
+    height: 22px;
+  }
+
+  /* Full-width output URL copy button */
+  .output-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  #copy-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* Remove card side padding so content has more room */
+  .locked-card {
+    border-radius: var(--radius-lg);
+  }
+
+  /* Ensure adblock modal doesn't overflow screen */
+  .adblock-modal {
+    padding: var(--space-lg);
+  }
+}
+
+
+/* ──────────────────────────────────────────────
+   TIER 3 — Tablet Portrait (≥ 600px)
+   Handles phablets and small tablets.
+   ────────────────────────────────────────────── */
+@media (min-width: 600px) {
+  /* Restore button text labels */
+  .btn-text { display: inline; }
+
+  /* Two-column features grid */
+  .features-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+
+/* ──────────────────────────────────────────────
+   TIER 4 — Tablet Landscape / Small Desktop (≥ 768px)
+   ────────────────────────────────────────────── */
+@media (min-width: 768px) {
+  /* Locked page: place card and content ad side-by-side */
+  .locked-main .container {
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .locked-card { align-self: flex-start; }
+
+  /* Constrain the content ad zone to standard medium-rectangle width */
+  .ad-zone--content {
+    max-width: 300px;
+    align-self: flex-start;
+  }
+
+  .ad-demo-box { min-height: 250px; }
+
+  /* Restore full nav links */
+  .nav-links { display: flex; }
+}
+
+
+/* ──────────────────────────────────────────────
+   TIER 5 — Desktop (≥ 1024px)
+   Full three-column features layout.
+   ────────────────────────────────────────────── */
+@media (min-width: 1024px) {
+  .features-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+
+/* ──────────────────────────────────────────────
+   ACCESSIBILITY — Reduced Motion
+   Respect the OS setting for users who are
+   sensitive to animation.
+   ────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
