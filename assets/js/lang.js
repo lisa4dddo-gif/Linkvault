@@ -151,8 +151,8 @@ window.LV_LANG = {
   /* ──────────────────────────────────────────────────────────────
      FOOTER  (index.html)
      ────────────────────────────────────────────────────────────── */
-  footer_copy : '© 2025 LinkVault. Built for CodeCanyon publishers.',
-
+    footer_copy : '© 2026 LinkVault. Premium Link Monetization Tool.',
+    
   /* ──────────────────────────────────────────────────────────────
      LOCKED PAGE — GENERAL  (locked.html)
      ────────────────────────────────────────────────────────────── */
